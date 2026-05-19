@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Results - VF Value Synthesis</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">Prediction Results</h1>
+                <p class="header-subtitle">Visual Field Synthesis Output</p>
+            </div>
+        </header>
+
+        <!-- Research Prototype Notice -->
+        <div class="disclaimer-banner">
+            <div class="disclaimer-icon">⚠️</div>
+            <div class="disclaimer-text">
+                <strong>Research Prototype Notice:</strong> This is a research prototype. Not for clinical diagnosis. Results must be validated by qualified ophthalmologists in appropriate clinical context.
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Results Summary Section -->
+            <section class="section results-summary">
+                <h2>Summary</h2>
+                
+                <div class="results-grid">
+                    <!-- Input Image -->
+                    <div class="results-card image-card">
+                        <h3>Input Fundus Image</h3>
+                        <div class="result-image-container">
+                            <img id="inputImage" src="" alt="Input fundus image" class="result-image">
+                        </div>
+                    </div>
+
+                    <!-- Input Parameters -->
+                    <div class="results-card params-card">
+                        <h3>Input Parameters</h3>
+                        <dl class="params-list">
+                            <dt>Age:</dt>
+                            <dd id="resultAge">—</dd>
+                            
+                            <dt>Gender:</dt>
+                            <dd id="resultGender">—</dd>
+                            
+                            <dt>IOP:</dt>
+                            <dd id="resultIOP">—</dd>
+                            
+                            <dt>CCT:</dt>
+                            <dd id="resultCCT">—</dd>
+                            
+                            <dt>Diffusion Steps:</dt>
+                            <dd id="resultSteps">—</dd>
+                            
+                            <dt>Model Output ID:</dt>
+                            <dd id="resultOutputID" class="output-id">—</dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VF Statistics Section -->
+            <section class="section vf-statistics">
+                <h2>Synthesised Visual Field Statistics</h2>
+                
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Mean Sensitivity</div>
+                        <div class="stat-value" id="vfMean">—</div>
+                        <div class="stat-unit">dB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Min Sensitivity</div>
+                        <div class="stat-value" id="vfMin">—</div>
+                        <div class="stat-unit">dB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Max Sensitivity</div>
+                        <div class="stat-value" id="vfMax">—</div>
+                        <div class="stat-unit">dB</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Standard Deviation</div>
+                        <div class="stat-value" id="vfStd">—</div>
+                        <div class="stat-unit">dB</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VF Grid Visualization -->
+            <section class="section vf-visualization">
+                <h2>Visual Field Grid</h2>
+                <p class="visualization-help">61-point Humphrey 24-2 pattern. Values in dB (decibels). Higher = better sensitivity.</p>
+                
+                <div class="vf-grid-wrapper">
+                    <canvas id="vfCanvas" class="vf-canvas"></canvas>
+                </div>
+                <div class="canvas-controls">
+                    <button id="downloadCanvasBtn" class="btn btn-secondary">Download as Image</button>
+                </div>
+            </section>
+
+            <!-- VF Values Table -->
+            <section class="section vf-table-section">
+                <h2>VF Point Values (61 Points)</h2>
+                <div class="table-wrapper">
+                    <table id="vfTable" class="vf-table">
+                        <thead>
+                            <tr>
+                                <th>Point #</th>
+                                <th>Value (dB)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vfTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="section action-buttons">
+                <div class="button-group">
+                    <a href="patient-details.html" class="btn btn-primary">New Prediction</a>
+                    <a href="feedback.html" class="btn btn-secondary">Provide Feedback</a>
+                    <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                </div>
+            </section>
+
+            <!-- Clinical Interpretation Note -->
+            <section class="section interpretation-note">
+                <h3>Clinical Interpretation Guidelines</h3>
+                <ul class="interpretation-list">
+                    <li>This synthesised VF is a research output. Clinical correlation is essential.</li>
+                    <li>Predictions are probabilistic; compare with recent actual VF tests when available.</li>
+                    <li>VF values typically range 0–35 dB in normal fields; lower values indicate localized defects.</li>
+                    <li>Do not use for diagnostic decisions without professional ophthalmological review.</li>
+                    <li>Consider clinical context, patient history, and imaging findings.</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
+    </footer>
+
+    <!-- Libraries for Canvas Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>

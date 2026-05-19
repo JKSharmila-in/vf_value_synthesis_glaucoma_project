@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details - VF Value Synthesis</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">Patient Details & Prediction</h1>
+                <p class="header-subtitle">Enter fundus image and optional clinical parameters</p>
+            </div>
+        </header>
+
+        <!-- Research Prototype Notice -->
+        <div class="disclaimer-banner">
+            <div class="disclaimer-icon">⚠️</div>
+            <div class="disclaimer-text">
+                <strong>Research Prototype Notice:</strong> This is a research prototype. Not for clinical diagnosis. Use by qualified ophthalmologists only.
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Form Section -->
+            <section class="section form-section">
+                <form id="predictionForm" class="prediction-form">
+                    <!-- Step 1: Fundus Image (Required) -->
+                    <fieldset class="form-fieldset">
+                        <legend class="fieldset-legend">Step 1: Upload Fundus Image <span class="required-asterisk">*</span></legend>
+                        <p class="form-help-text">Fundus image is required. Supported formats: JPG, PNG</p>
+                        
+                        <div class="form-group">
+                            <label for="fundusImage" class="form-label">Fundus Image:</label>
+                            <input 
+                                type="file" 
+                                id="fundusImage" 
+                                name="fundusImage" 
+                                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                                required
+                                class="form-input-file"
+                            >
+                            <span class="form-error" id="imageError"></span>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="imagePreview" class="image-preview-container" style="display: none;">
+                            <p class="image-preview-label">Preview:</p>
+                            <img id="previewImg" src="" alt="Fundus image preview" class="preview-image">
+                        </div>
+                    </fieldset>
+
+                    <!-- Step 2: Clinical Parameters (Optional) -->
+                    <fieldset class="form-fieldset">
+                        <legend class="fieldset-legend">Step 2: Clinical Parameters <span class="optional-label">(Optional)</span></legend>
+                        <p class="form-help-text">Unchecked fields will use learned null token representations.</p>
+
+                        <!-- Checkboxes for Optional Fields -->
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="useAge" name="useAge" class="form-checkbox">
+                                <span>Provide Age</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="useGender" name="useGender" class="form-checkbox">
+                                <span>Provide Gender</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="useIOP" name="useIOP" class="form-checkbox">
+                                <span>Provide IOP</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="useCCT" name="useCCT" class="form-checkbox">
+                                <span>Provide CCT</span>
+                            </label>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="form-group">
+                            <label for="age" class="form-label">Age (years):</label>
+                            <input 
+                                type="number" 
+                                id="age" 
+                                name="age" 
+                                min="1" 
+                                max="120" 
+                                step="0.5"
+                                placeholder="e.g., 55"
+                                disabled
+                                class="form-input"
+                            >
+                            <span class="form-error" id="ageError"></span>
+                        </div>
+
+                        <!-- Gender -->
+                        <div class="form-group">
+                            <label for="gender" class="form-label">Gender:</label>
+                            <select id="gender" name="gender" disabled class="form-select">
+                                <option value="">-- Select --</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                            <span class="form-error" id="genderError"></span>
+                        </div>
+
+                        <!-- IOP -->
+                        <div class="form-group">
+                            <label for="iop" class="form-label">IOP (mmHg):</label>
+                            <input 
+                                type="number" 
+                                id="iop" 
+                                name="iop" 
+                                min="0" 
+                                max="60" 
+                                step="0.1"
+                                placeholder="e.g., 14.5"
+                                disabled
+                                class="form-input"
+                            >
+                            <span class="form-error" id="iopError"></span>
+                        </div>
+
+                        <!-- CCT -->
+                        <div class="form-group">
+                            <label for="cct" class="form-label">CCT (µm):</label>
+                            <input 
+                                type="number" 
+                                id="cct" 
+                                name="cct" 
+                                min="200" 
+                                max="900" 
+                                step="1"
+                                placeholder="e.g., 540"
+                                disabled
+                                class="form-input"
+                            >
+                            <span class="form-error" id="cctError"></span>
+                        </div>
+                    </fieldset>
+
+                    <!-- Step 3: Sampling Quality (Optional) -->
+                    <fieldset class="form-fieldset">
+                        <legend class="fieldset-legend">Step 3: Sampling Quality <span class="optional-label">(Optional)</span></legend>
+                        <p class="form-help-text">Higher steps = better quality but slower computation.</p>
+
+                        <div class="form-group">
+                            <label for="diffusionSteps" class="form-label">Diffusion Steps (10–300):</label>
+                            <input 
+                                type="range" 
+                                id="diffusionSteps" 
+                                name="diffusionSteps" 
+                                min="10" 
+                                max="300" 
+                                step="10"
+                                value="100"
+                                class="form-slider"
+                            >
+                            <div class="slider-display">
+                                <span id="stepsValue">100</span> steps
+                            </div>
+                            <p class="form-help-text">Default: 100 steps (good quality, ~30s on GPU)</p>
+                        </div>
+                    </fieldset>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" id="predictBtn" class="btn btn-primary btn-large" disabled>
+                            Run Prediction
+                        </button>
+                        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </form>
+
+                <!-- Processing Spinner -->
+                <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                    <div class="spinner-circle"></div>
+                    <p id="loadingText">Processing prediction... (This may take 30–60 seconds)</p>
+                </div>
+
+                <!-- Error Message -->
+                <div id="formError" class="error-message" style="display: none;"></div>
+
+                <!-- Success Redirect -->
+                <div id="successRedirect" style="display: none;">
+                    <p>Prediction complete! Redirecting to results...</p>
+                </div>
+            </section>
+
+            <!-- Information Panel -->
+            <section class="section info-panel">
+                <h3>Input Guidelines</h3>
+                <ul class="guidelines-list">
+                    <li><strong>Fundus Image:</strong> High-quality photograph showing the optic disc and macula. Minimum 256×256 pixels.</li>
+                    <li><strong>Age:</strong> Patient age in years (1–120).</li>
+                    <li><strong>Gender:</strong> Biological sex (Male / Female).</li>
+                    <li><strong>IOP:</strong> Intraocular pressure in mmHg (0–60).</li>
+                    <li><strong>CCT:</strong> Central corneal thickness in micrometers (200–900 µm).</li>
+                </ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>

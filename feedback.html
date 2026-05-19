@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - VF Value Synthesis</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">Feedback</h1>
+                <p class="header-subtitle">Help us improve the VF Value Synthesis prototype</p>
+            </div>
+        </header>
+
+        <!-- Research Prototype Notice -->
+        <div class="disclaimer-banner">
+            <div class="disclaimer-icon">⚠️</div>
+            <div class="disclaimer-text">
+                <strong>Research Prototype Notice:</strong> This is a research prototype. Not for clinical diagnosis.
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Feedback Form Section -->
+            <section class="section feedback-section">
+                <form id="feedbackForm" class="feedback-form">
+                    <!-- Feedback Type -->
+                    <div class="form-group">
+                        <label for="feedbackType" class="form-label">Feedback Type <span class="required-asterisk">*</span></label>
+                        <select id="feedbackType" name="feedbackType" required class="form-select">
+                            <option value="">-- Select --</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="usability">Usability Suggestion</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="clinical">Clinical Observation</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <span class="form-error" id="typeError"></span>
+                    </div>
+
+                    <!-- Your Name (Optional) -->
+                    <div class="form-group">
+                        <label for="name" class="form-label">Your Name <span class="optional-label">(Optional)</span></label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            placeholder="e.g., Dr. Smith"
+                            class="form-input"
+                        >
+                    </div>
+
+                    <!-- Your Email (Optional) -->
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email <span class="optional-label">(Optional)</span></label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            placeholder="e.g., dr.smith@institution.org"
+                            class="form-input"
+                        >
+                        <span class="form-help-text">For follow-up questions only.</span>
+                    </div>
+
+                    <!-- Feedback Message -->
+                    <div class="form-group">
+                        <label for="message" class="form-label">Your Feedback <span class="required-asterisk">*</span></label>
+                        <textarea 
+                            id="message" 
+                            name="message" 
+                            rows="8" 
+                            placeholder="Please describe your feedback in detail..."
+                            required
+                            class="form-textarea"
+                        ></textarea>
+                        <span class="form-error" id="messageError"></span>
+                        <div class="char-count">
+                            <span id="charCount">0</span> / 2000 characters
+                        </div>
+                    </div>
+
+                    <!-- Rating (Optional) -->
+                    <div class="form-group">
+                        <label class="form-label">Overall Experience <span class="optional-label">(Optional)</span></label>
+                        <div class="rating-group">
+                            <label class="radio-label">
+                                <input type="radio" name="rating" value="excellent" class="form-radio">
+                                <span>Excellent</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="rating" value="good" class="form-radio">
+                                <span>Good</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="rating" value="neutral" class="form-radio">
+                                <span>Neutral</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="rating" value="poor" class="form-radio">
+                                <span>Poor</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Consent Checkbox -->
+                    <div class="form-group">
+                        <label class="checkbox-label-large">
+                            <input type="checkbox" id="consent" name="consent" class="form-checkbox">
+                            <span>I consent to the use of this feedback for research and prototype improvement.</span>
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-actions">
+                        <button type="submit" id="submitFeedback" class="btn btn-primary btn-large">
+                            Submit Feedback
+                        </button>
+                        <a href="index.html" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </form>
+
+                <!-- Success Message -->
+                <div id="feedbackSuccess" class="success-message" style="display: none;">
+                    <h3>Thank You!</h3>
+                    <p>Your feedback has been recorded locally and will help improve future versions of this prototype.</p>
+                    <a href="index.html" class="btn btn-primary">Return to Home</a>
+                </div>
+
+                <!-- Error Message -->
+                <div id="feedbackError" class="error-message" style="display: none;"></div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section class="section faq-section">
+                <h2>Frequently Asked Questions</h2>
+                
+                <div class="faq-item">
+                    <h4>Q: Where is my feedback stored?</h4>
+                    <p>A: Feedback is stored locally on your machine. No data is transmitted externally. You can review the records folder in the project repository.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h4>Q: Can I submit feedback without providing my name or email?</h4>
+                    <p>A: Yes, name and email are optional. However, providing an email allows us to follow up with you if needed.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h4>Q: What should I include in a bug report?</h4>
+                    <p>A: Please describe the exact steps to reproduce the issue, what you expected to happen, and what actually happened. Include your browser and operating system if relevant.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h4>Q: How is clinical feedback used?</h4>
+                    <p>A: Clinical observations from ophthalmologists are invaluable for validating model predictions and identifying areas for improvement in the training process.</p>
+                </div>
+
+                <div class="faq-item">
+                    <h4>Q: Can I request new features?</h4>
+                    <p>A: Absolutely! Select "Feature Request" as the feedback type and describe the feature you'd like to see. We review all suggestions carefully.</p>
+                </div>
+            </section>
+
+            <!-- Contact Information -->
+            <section class="section contact-section">
+                <h2>Contact & Support</h2>
+                <p>For questions, issues, or institutional inquiries about this research prototype, please reach out to the development team.</p>
+                <p><strong>Note:</strong> This is a research prototype. For urgent clinical matters, please consult a qualified ophthalmologist directly.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/app.js"></script>
+</body>
+</html>

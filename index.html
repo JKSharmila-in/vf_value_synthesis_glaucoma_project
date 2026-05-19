@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VF Value Synthesis - Visual Field Prediction</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="header-title">VF Value Synthesis</h1>
+                <p class="header-subtitle">Medical AI Research Prototype for Visual Field Prediction</p>
+            </div>
+        </header>
+
+        <!-- Research Prototype Notice -->
+        <div class="disclaimer-banner">
+            <div class="disclaimer-icon">⚠️</div>
+            <div class="disclaimer-text">
+                <strong>Research Prototype Notice:</strong> This is a research prototype for evaluating AI-assisted Visual Field (VF) prediction from fundus images in glaucoma assessment. <strong>Not for clinical diagnosis.</strong> Use by qualified ophthalmologists / medical professionals only under appropriate institutional oversight.
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Information Section -->
+            <section class="section info-section">
+                <h2>About This Prototype</h2>
+                <p>This tool synthesizes Visual Field values from fundus fundus (retinal) images using a Conditional Diffusion Probabilistic Model (CDPM). The model integrates optional clinical parameters (age, intraocular pressure, gender, corneal thickness) to enhance prediction accuracy.</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>Image-Based Prediction</h3>
+                        <p>Leverages fundus image analysis with Vision Transformer embeddings</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Optional Clinical Data</h3>
+                        <p>Accepts supplementary patient parameters for improved context</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Diffusion-Based Synthesis</h3>
+                        <p>Uses advanced generative modeling for VF field synthesis</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Research Quality</h3>
+                        <p>Designed for clinical research and ophthalmologist evaluation</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How It Works Section -->
+            <section class="section how-section">
+                <h2>How It Works</h2>
+                <ol class="steps-list">
+                    <li>
+                        <strong>Upload Fundus Image:</strong>
+                        Provide a high-quality fundus photograph of the optic disc and macula region.
+                    </li>
+                    <li>
+                        <strong>Optional Clinical Data:</strong>
+                        Enter age, gender, intraocular pressure (IOP), and/or central corneal thickness (CCT). Missing fields use learned default representations.
+                    </li>
+                    <li>
+                        <strong>Run Prediction:</strong>
+                        The model synthesizes a 61-point Visual Field using conditional diffusion sampling.
+                    </li>
+                    <li>
+                        <strong>Review Results:</strong>
+                        Examine the predicted VF grid and summary statistics in context with the input fundus image.
+                    </li>
+                </ol>
+            </section>
+
+            <!-- Call-to-Action -->
+            <section class="section cta-section">
+                <h2>Get Started</h2>
+                <p>Ready to synthesize a Visual Field? Prepare a fundus image and any available clinical data.</p>
+                <a href="patient-details.html" class="btn btn-primary btn-large">
+                    Start Prediction
+                </a>
+            </section>
+
+            <!-- Requirements Section -->
+            <section class="section requirements-section">
+                <h2>Requirements & Inputs</h2>
+                <div class="requirements-grid">
+                    <div class="requirement-item required">
+                        <h4>Required</h4>
+                        <ul>
+                            <li><strong>Fundus Image:</strong> JPG, PNG (minimum 256×256 pixels, recommended 512×512 or larger)</li>
+                        </ul>
+                    </div>
+                    <div class="requirement-item optional">
+                        <h4>Optional</h4>
+                        <ul>
+                            <li><strong>Age:</strong> 1–120 years</li>
+                            <li><strong>Gender:</strong> Male / Female</li>
+                            <li><strong>IOP:</strong> 0–60 mmHg</li>
+                            <li><strong>CCT:</strong> 200–900 µm</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Important Notes Section -->
+            <section class="section notes-section">
+                <h2>Important Notes</h2>
+                <ul class="notes-list">
+                    <li>This prototype is <strong>not a diagnostic tool</strong>. Predictions are research outputs for professional review.</li>
+                    <li>Missing optional clinical fields are handled by learned null tokens optimized during model training.</li>
+                    <li>All prediction records are logged locally (non-identifiable data only).</li>
+                    <li>The synthesized VF should be validated by qualified ophthalmologists in clinical context.</li>
+                    <li>Model predictions are computed locally on your machine; no data is transmitted externally.</li>
+                </ul>
+            </section>
+
+            <!-- Footer Navigation -->
+            <nav class="footer-nav">
+                <a href="patient-details.html" class="nav-link">Patient Details</a>
+                <a href="feedback.html" class="nav-link">Feedback</a>
+            </nav>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
+    </footer>
+</body>
+</html>
