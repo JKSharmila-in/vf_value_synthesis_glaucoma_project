@@ -4,130 +4,174 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VF Value Synthesis - Visual Field Prediction</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --bg-deep: #03080f;
+        --bg-mid: #071428;
+        --blue: #3a6fd8;
+        --blue-bright: #4d84ff;
+        --blue-glow: rgba(61,105,220,0.45);
+        --white: #ffffff;
+        --dim: #7a91b5;
+      }
+
+      html, body {
+        height: 100%;
+      }
+
+      body {
+        font-family: 'Barlow', sans-serif;
+        background: radial-gradient(ellipse at 50% 40%, #0c1f4a 0%, #071428 40%, #03080f 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        color: var(--white);
+        overflow-x: hidden;
+      }
+
+      /* Star particles */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(1px 1px at 15% 20%, rgba(255,255,255,0.3) 0%, transparent 100%),
+          radial-gradient(1px 1px at 80% 15%, rgba(255,255,255,0.2) 0%, transparent 100%),
+          radial-gradient(1px 1px at 60% 75%, rgba(255,255,255,0.25) 0%, transparent 100%),
+          radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
+          radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.15) 0%, transparent 100%),
+          radial-gradient(1.5px 1.5px at 45% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
+          radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.2) 0%, transparent 100%),
+          radial-gradient(1px 1px at 70% 90%, rgba(255,255,255,0.15) 0%, transparent 100%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .splash {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 0;
+        padding: 40px 20px;
+        animation: fadeIn 1s ease forwards;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .eye-icon-wrap {
+        margin-bottom: 14px;
+        animation: fadeIn 1s ease 0.2s both;
+      }
+
+      .eye-svg {
+        width: 56px;
+        height: 36px;
+      }
+
+      .tagline {
+        font-family: 'Barlow', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 4px;
+        color: var(--dim);
+        text-transform: uppercase;
+        margin-bottom: 28px;
+        animation: fadeIn 1s ease 0.3s both;
+      }
+
+      .main-title {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: clamp(38px, 7vw, 80px);
+        font-weight: 900;
+        letter-spacing: 2px;
+        line-height: 1.05;
+        text-transform: uppercase;
+        color: var(--white);
+        text-shadow: 0 0 60px rgba(77,132,255,0.3);
+        animation: fadeIn 1s ease 0.4s both;
+      }
+
+      .sub-title {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: clamp(24px, 4vw, 52px);
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--white);
+        margin-bottom: 44px;
+        animation: fadeIn 1s ease 0.5s both;
+      }
+
+      .btn-next {
+        background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+        color: #fff;
+        border: none;
+        padding: 14px 72px;
+        font-family: 'Barlow', sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 24px rgba(58,111,216,0.5);
+        animation: fadeIn 1s ease 0.6s both;
+      }
+
+      .btn-next:hover {
+        background: linear-gradient(135deg, #4d84ff, #6f9fff);
+        box-shadow: 0 6px 32px rgba(77,132,255,0.65);
+        transform: translateY(-2px);
+      }
+
+      /* Responsive */
+      @media (max-width: 600px) {
+        body { overflow-y: auto; }
+        .main-title { font-size: 36px; }
+        .sub-title { font-size: 22px; }
+        .btn-next { padding: 13px 52px; font-size: 14px; }
+        .splash { padding: 20px; }
+      }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="header-title">VF Value Synthesis</h1>
-                <p class="header-subtitle">Medical AI Research Prototype for Visual Field Prediction</p>
-            </div>
-        </header>
-
-        <!-- Research Prototype Notice -->
-        <div class="disclaimer-banner">
-            <div class="disclaimer-icon">⚠️</div>
-            <div class="disclaimer-text">
-                <strong>Research Prototype Notice:</strong> This is a research prototype for evaluating AI-assisted Visual Field (VF) prediction from fundus images in glaucoma assessment. <strong>Not for clinical diagnosis.</strong> Use by qualified ophthalmologists / medical professionals only under appropriate institutional oversight.
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Information Section -->
-            <section class="section info-section">
-                <h2>About This Prototype</h2>
-                <p>This tool synthesizes Visual Field values from fundus fundus (retinal) images using a Conditional Diffusion Probabilistic Model (CDPM). The model integrates optional clinical parameters (age, intraocular pressure, gender, corneal thickness) to enhance prediction accuracy.</p>
-                
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>Image-Based Prediction</h3>
-                        <p>Leverages fundus image analysis with Vision Transformer embeddings</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Optional Clinical Data</h3>
-                        <p>Accepts supplementary patient parameters for improved context</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Diffusion-Based Synthesis</h3>
-                        <p>Uses advanced generative modeling for VF field synthesis</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>Research Quality</h3>
-                        <p>Designed for clinical research and ophthalmologist evaluation</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- How It Works Section -->
-            <section class="section how-section">
-                <h2>How It Works</h2>
-                <ol class="steps-list">
-                    <li>
-                        <strong>Upload Fundus Image:</strong>
-                        Provide a high-quality fundus photograph of the optic disc and macula region.
-                    </li>
-                    <li>
-                        <strong>Optional Clinical Data:</strong>
-                        Enter age, gender, intraocular pressure (IOP), and/or central corneal thickness (CCT). Missing fields use learned default representations.
-                    </li>
-                    <li>
-                        <strong>Run Prediction:</strong>
-                        The model synthesizes a 61-point Visual Field using conditional diffusion sampling.
-                    </li>
-                    <li>
-                        <strong>Review Results:</strong>
-                        Examine the predicted VF grid and summary statistics in context with the input fundus image.
-                    </li>
-                </ol>
-            </section>
-
-            <!-- Call-to-Action -->
-            <section class="section cta-section">
-                <h2>Get Started</h2>
-                <p>Ready to synthesize a Visual Field? Prepare a fundus image and any available clinical data.</p>
-                <a href="patient-details.html" class="btn btn-primary btn-large">
-                    Start Prediction
-                </a>
-            </section>
-
-            <!-- Requirements Section -->
-            <section class="section requirements-section">
-                <h2>Requirements & Inputs</h2>
-                <div class="requirements-grid">
-                    <div class="requirement-item required">
-                        <h4>Required</h4>
-                        <ul>
-                            <li><strong>Fundus Image:</strong> JPG, PNG (minimum 256×256 pixels, recommended 512×512 or larger)</li>
-                        </ul>
-                    </div>
-                    <div class="requirement-item optional">
-                        <h4>Optional</h4>
-                        <ul>
-                            <li><strong>Age:</strong> 1–120 years</li>
-                            <li><strong>Gender:</strong> Male / Female</li>
-                            <li><strong>IOP:</strong> 0–60 mmHg</li>
-                            <li><strong>CCT:</strong> 200–900 µm</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Important Notes Section -->
-            <section class="section notes-section">
-                <h2>Important Notes</h2>
-                <ul class="notes-list">
-                    <li>This prototype is <strong>not a diagnostic tool</strong>. Predictions are research outputs for professional review.</li>
-                    <li>Missing optional clinical fields are handled by learned null tokens optimized during model training.</li>
-                    <li>All prediction records are logged locally (non-identifiable data only).</li>
-                    <li>The synthesized VF should be validated by qualified ophthalmologists in clinical context.</li>
-                    <li>Model predictions are computed locally on your machine; no data is transmitted externally.</li>
-                </ul>
-            </section>
-
-            <!-- Footer Navigation -->
-            <nav class="footer-nav">
-                <a href="patient-details.html" class="nav-link">Patient Details</a>
-                <a href="feedback.html" class="nav-link">Feedback</a>
-            </nav>
-        </main>
+  <div class="container">
+    <div class="splash">
+      <div class="eye-icon-wrap">
+        <svg class="eye-svg" viewBox="0 0 56 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="28" cy="18" rx="27" ry="17" stroke="#3a6fd8" stroke-width="1.8"/>
+          <circle cx="28" cy="18" r="9" stroke="#3a6fd8" stroke-width="1.8"/>
+          <circle cx="28" cy="18" r="4" fill="#3a6fd8"/>
+          <circle cx="31" cy="15" r="1.5" fill="rgba(255,255,255,0.5)"/>
+        </svg>
+      </div>
+      <p class="tagline">AI-Powered Early Detection</p>
+      <h1 class="main-title">Visual Field Synthesis</h1>
+      <p class="sub-title">(Glaucoma Prediction)</p>
+      <a href="patient-details.html" class="btn-next">Next</a>
     </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
-    </footer>
+  </div>
 </body>
 </html>
