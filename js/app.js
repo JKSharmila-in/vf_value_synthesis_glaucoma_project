@@ -1,626 +1,637 @@
-/**
- * VF Value Synthesis - Application JavaScript
- * 
- * Handles:
- * - Patient details form validation and submission
- * - Image preview
- * - Clinical parameter validation
- * - Feedback form handling
- * - Results display and visualization
- * - VF grid rendering
- * - Local storage of session data
- */
+/* ==========================================
+   VF VALUE SYNTHESIS - APPLICATION JS
+   ========================================== */
 
-// ============================================================================
-// Utility Functions
-// ============================================================================
+// ==========================================
+// UTILITY FUNCTIONS
+// ==========================================
 
 /**
- * Show/hide elements by ID
+ * Show/hide elements
  */
-function showElement(elementId) {
-    const elem = document.getElementById(elementId);
-    if (elem) elem.style.display = '';
+function show(el) {
+  if (el) el.style.display = '';
 }
 
-function hideElement(elementId) {
-    const elem = document.getElementById(elementId);
-    if (elem) elem.style.display = 'none';
+function hide(el) {
+  if (el) el.style.display = 'none';
 }
 
 /**
- * Display error message on form field
+ * Clear error message
  */
-function showError(fieldId, message) {
-    const errorElem = document.getElementById(fieldId + 'Error');
-    if (errorElem) {
-        errorElem.textContent = message;
-        errorElem.classList.add('show');
-    }
-}
-
-function clearError(fieldId) {
-    const errorElem = document.getElementById(fieldId + 'Error');
-    if (errorElem) {
-        errorElem.textContent = '';
-        errorElem.classList.remove('show');
-    }
+function clearError(errorEl) {
+  if (errorEl) errorEl.textContent = '';
 }
 
 /**
- * Validate file is an image
+ * Show error message
  */
-function isValidImageFile(file) {
-    if (!file) return false;
-    const validTypes = ['image/jpeg', 'image/png'];
-    return validTypes.includes(file.type);
+function showError(errorEl, message) {
+  if (errorEl) errorEl.textContent = message;
 }
 
 /**
- * Convert image file to base64
+ * Validate email
  */
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
 }
 
 /**
- * Store data in session storage
+ * Format date
  */
-function storeSessionData(key, value) {
-    try {
-        sessionStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {
-        console.warn('Session storage not available:', e);
-    }
+function formatDate(date) {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
+
+// ==========================================
+// PATIENT DETAILS PAGE (patient-details.html)
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Initialize patient details form if on patient-details page
+  if (document.getElementById('predictionForm')) {
+    initPatientDetailsPage();
+  }
+
+  // Initialize feedback form if on feedback page
+  if (document.getElementById('feedbackForm')) {
+    initFeedbackPage();
+  }
+
+  // Initialize results page if on prediction-result page
+  if (document.getElementById('vfTable')) {
+    initResultsPage();
+  }
+});
 
 /**
- * Retrieve data from session storage
+ * Initialize Patient Details Page
  */
-function getSessionData(key) {
-    try {
-        const data = sessionStorage.getItem(key);
-        return data ? JSON.parse(data) : null;
-    } catch (e) {
-        console.warn('Session storage not available:', e);
-        return null;
-    }
-}
+function initPatientDetailsPage() {
+  const form = document.getElementById('predictionForm');
+  const fundusImageInput = document.getElementById('fundusImage');
+  const imagePreview = document.getElementById('imagePreview');
+  const previewImg = document.getElementById('previewImg');
+  const predictBtn = document.getElementById('predictBtn');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const loadingText = document.getElementById('loadingText');
+  const formError = document.getElementById('formError');
 
-// ============================================================================
-// Patient Details Form
-// ============================================================================
+  // Clinical parameter checkboxes
+  const useAgeCheckbox = document.getElementById('useAge');
+  const useGenderCheckbox = document.getElementById('useGender');
+  const useIOPCheckbox = document.getElementById('useIOP');
+  const useCCTCheckbox = document.getElementById('useCCT');
 
-function initPatientDetailsForm() {
-    const form = document.getElementById('predictionForm');
-    if (!form) return;
+  const ageInput = document.getElementById('age');
+  const genderSelect = document.getElementById('gender');
+  const iopInput = document.getElementById('iop');
+  const cctInput = document.getElementById('cct');
 
-    const fundusImageInput = document.getElementById('fundusImage');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewImg = document.getElementById('previewImg');
-    const predictBtn = document.getElementById('predictBtn');
-    
-    // ---- Image Upload Handler ----
-    if (fundusImageInput) {
-        fundusImageInput.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            clearError('image');
+  const diffusionStepsInput = document.getElementById('diffusionSteps');
+  const stepsValueDisplay = document.getElementById('stepsValue');
 
-            if (!file) {
-                hideElement('imagePreview');
-                return;
-            }
+  // Handle image file selection
+  fundusImageInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    clearError(document.getElementById('imageError'));
 
-            if (!isValidImageFile(file)) {
-                showError('image', 'Please upload a valid image file (JPG or PNG).');
-                fundusImageInput.value = '';
-                hideElement('imagePreview');
-                return;
-            }
-
-            // Show preview
-            try {
-                const base64 = await fileToBase64(file);
-                previewImg.src = base64;
-                showElement('imagePreview');
-            } catch (e) {
-                showError('image', 'Error reading image file.');
-                console.error(e);
-            }
-
-            updatePredictButtonState();
-        });
+    if (!file) {
+      hide(imagePreview);
+      predictBtn.disabled = true;
+      return;
     }
 
-    // ---- Clinical Field Toggles ----
-    const fieldToggles = {
-        useAge: 'age',
-        useGender: 'gender',
-        useIOP: 'iop',
-        useCCT: 'cct'
+    // Validate file type
+    if (!file.type.match('image/(jpeg|png)')) {
+      showError(document.getElementById('imageError'), 'Please select a valid JPG or PNG image.');
+      predictBtn.disabled = true;
+      hide(imagePreview);
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      showError(document.getElementById('imageError'), 'File size must be less than 10MB.');
+      predictBtn.disabled = true;
+      hide(imagePreview);
+      return;
+    }
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      previewImg.src = event.target.result;
+      show(imagePreview);
+      predictBtn.disabled = false;
     };
+    reader.readAsDataURL(file);
+  });
 
-    Object.entries(fieldToggles).forEach(([checkboxId, inputId]) => {
-        const checkbox = document.getElementById(checkboxId);
-        const input = document.getElementById(inputId);
-        if (checkbox && input) {
-            checkbox.addEventListener('change', (event) => {
-                input.disabled = !event.target.checked;
-                if (!event.target.checked) {
-                    input.value = '';
-                    clearError(inputId);
-                }
-                updatePredictButtonState();
-            });
-        }
-    });
+  // Toggle clinical parameter inputs
+  useAgeCheckbox.addEventListener('change', function () {
+    ageInput.disabled = !this.checked;
+    if (!this.checked) {
+      ageInput.value = '';
+      clearError(document.getElementById('ageError'));
+    }
+  });
 
-    // ---- Diffusion Steps Slider ----
-    const stepsSlider = document.getElementById('diffusionSteps');
-    const stepsValue = document.getElementById('stepsValue');
-    if (stepsSlider && stepsValue) {
-        stepsSlider.addEventListener('input', (event) => {
-            stepsValue.textContent = event.target.value;
-        });
+  useGenderCheckbox.addEventListener('change', function () {
+    genderSelect.disabled = !this.checked;
+    if (!this.checked) {
+      genderSelect.value = '';
+      clearError(document.getElementById('genderError'));
+    }
+  });
+
+  useIOPCheckbox.addEventListener('change', function () {
+    iopInput.disabled = !this.checked;
+    if (!this.checked) {
+      iopInput.value = '';
+      clearError(document.getElementById('iopError'));
+    }
+  });
+
+  useCCTCheckbox.addEventListener('change', function () {
+    cctInput.disabled = !this.checked;
+    if (!this.checked) {
+      cctInput.value = '';
+      clearError(document.getElementById('cctError'));
+    }
+  });
+
+  // Update slider display value
+  diffusionStepsInput.addEventListener('input', function () {
+    stepsValueDisplay.textContent = this.value;
+  });
+
+  // Handle form submission
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    clearError(formError);
+
+    // Validate required fields
+    const imageFile = fundusImageInput.files[0];
+    if (!imageFile) {
+      showError(document.getElementById('imageError'), 'Please select a fundus image.');
+      return;
     }
 
-    // ---- Form Submission ----
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        await handlePredictionSubmit();
-    });
+    // Validate optional clinical parameters if provided
+    let validationErrors = false;
 
-    // Initialize button state
-    updatePredictButtonState();
-}
-
-/**
- * Update predict button state based on form validity
- */
-function updatePredictButtonState() {
-    const fundusImageInput = document.getElementById('fundusImage');
-    const predictBtn = document.getElementById('predictBtn');
-    
-    const hasImage = fundusImageInput && fundusImageInput.files && fundusImageInput.files.length > 0;
-    if (predictBtn) {
-        predictBtn.disabled = !hasImage;
-    }
-}
-
-/**
- * Validate form inputs
- */
-function validatePredictionForm() {
-    let isValid = true;
-
-    // Validate image
-    const fundusImageInput = document.getElementById('fundusImage');
-    if (!fundusImageInput || !fundusImageInput.files || fundusImageInput.files.length === 0) {
-        showError('image', 'Fundus image is required.');
-        isValid = false;
-    } else {
-        clearError('image');
+    if (useAgeCheckbox.checked) {
+      const age = parseFloat(ageInput.value);
+      if (!ageInput.value || age < 1 || age > 120) {
+        showError(document.getElementById('ageError'), 'Age must be between 1 and 120.');
+        validationErrors = true;
+      }
     }
 
-    // Validate optional clinical fields if enabled
-    const validations = {
-        useAge: { input: 'age', min: 1, max: 120 },
-        useGender: { input: 'gender' },
-        useIOP: { input: 'iop', min: 0, max: 60 },
-        useCCT: { input: 'cct', min: 200, max: 900 }
-    };
-
-    Object.entries(validations).forEach(([checkboxId, config]) => {
-        const checkbox = document.getElementById(checkboxId);
-        const input = document.getElementById(config.input);
-
-        if (checkbox && checkbox.checked && input) {
-            const value = input.value.trim();
-
-            if (config.input === 'gender') {
-                if (!value || (value !== 'M' && value !== 'F')) {
-                    showError(config.input, 'Please select a gender.');
-                    isValid = false;
-                } else {
-                    clearError(config.input);
-                }
-            } else {
-                const numValue = parseFloat(value);
-                if (!value || isNaN(numValue) || numValue < config.min || numValue > config.max) {
-                    showError(config.input, `Value must be between ${config.min} and ${config.max}.`);
-                    isValid = false;
-                } else {
-                    clearError(config.input);
-                }
-            }
-        } else {
-            clearError(config.input);
-        }
-    });
-
-    return isValid;
-}
-
-/**
- * Handle prediction form submission
- */
-async function handlePredictionSubmit() {
-    if (!validatePredictionForm()) {
-        return;
+    if (useIOPCheckbox.checked) {
+      const iop = parseFloat(iopInput.value);
+      if (!iopInput.value || iop < 0 || iop > 60) {
+        showError(document.getElementById('iopError'), 'IOP must be between 0 and 60 mmHg.');
+        validationErrors = true;
+      }
     }
+
+    if (useCCTCheckbox.checked) {
+      const cct = parseFloat(cctInput.value);
+      if (!cctInput.value || cct < 200 || cct > 900) {
+        showError(document.getElementById('cctError'), 'CCT must be between 200 and 900 µm.');
+        validationErrors = true;
+      }
+    }
+
+    if (validationErrors) return;
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('fundusImage', imageFile);
+    formData.append('useAge', useAgeCheckbox.checked);
+    if (useAgeCheckbox.checked) formData.append('age', ageInput.value);
+
+    formData.append('useGender', useGenderCheckbox.checked);
+    if (useGenderCheckbox.checked) formData.append('gender', genderSelect.value);
+
+    formData.append('useIOP', useIOPCheckbox.checked);
+    if (useIOPCheckbox.checked) formData.append('iop', iopInput.value);
+
+    formData.append('useCCT', useCCTCheckbox.checked);
+    if (useCCTCheckbox.checked) formData.append('cct', cctInput.value);
+
+    formData.append('diffusionSteps', diffusionStepsInput.value);
 
     // Show loading spinner
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const formError = document.getElementById('formError');
-    const predictBtn = document.getElementById('predictBtn');
-    
-    if (loadingSpinner) showElement('loadingSpinner');
-    if (formError) hideElement('formError');
-    if (predictBtn) predictBtn.disabled = true;
+    show(loadingSpinner);
+    form.style.opacity = '0.5';
+    form.style.pointerEvents = 'none';
 
     try {
-        // Collect form data
-        const fundusImageInput = document.getElementById('fundusImage');
-        const fundusFile = fundusImageInput.files[0];
+      // Simulate API call to backend prediction service
+      // In a real implementation, this would call your Flask backend
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        const formData = new FormData();
-        formData.append('image', fundusFile);
-        
-        // Optional fields
-        const fields = ['age', 'gender', 'iop', 'cct'];
-        fields.forEach(field => {
-            const checkboxId = 'use' + field.charAt(0).toUpperCase() + field.slice(1);
-            const checkbox = document.getElementById(checkboxId);
-            const input = document.getElementById(field);
+      // For demonstration: store form data in sessionStorage
+      sessionStorage.setItem(
+        'predictionData',
+        JSON.stringify({
+          age: useAgeCheckbox.checked ? ageInput.value : null,
+          gender: useGenderCheckbox.checked ? genderSelect.value : null,
+          iop: useIOPCheckbox.checked ? iopInput.value : null,
+          cct: useCCTCheckbox.checked ? cctInput.value : null,
+          diffusionSteps: diffusionStepsInput.value,
+          imageBase64: previewImg.src,
+          timestamp: new Date().toISOString(),
+        })
+      );
 
-            if (checkbox && checkbox.checked && input && input.value) {
-                formData.append(field, input.value);
-            }
-        });
+      // Generate mock VF results
+      const mockVFValues = generateMockVFValues();
+      sessionStorage.setItem('vfResults', JSON.stringify(mockVFValues));
 
-        const stepsSlider = document.getElementById('diffusionSteps');
-        if (stepsSlider) {
-            formData.append('steps', stepsSlider.value);
-        }
-
-        // IMPORTANT: This is where you would call the Python backend
-        // Example (requires Flask server or similar):
-        // const response = await fetch('http://localhost:5000/predict', {
-        //     method: 'POST',
-        //     body: formData
-        // });
-        
-        // For now, simulate the prediction (demo mode)
-        const predictionResult = await simulatePrediction(formData);
-
-        // Store result in session
-        storeSessionData('predictionResult', predictionResult);
-
-        // Redirect to results page
-        if (loadingSpinner) hideElement('loadingSpinner');
+      // Redirect to results page
+      setTimeout(() => {
         window.location.href = 'prediction-result.html';
-
+      }, 500);
     } catch (error) {
-        console.error('Prediction error:', error);
-        if (formError) {
-            formError.textContent = `Error: ${error.message}`;
-            showElement('formError');
-        }
-        if (loadingSpinner) hideElement('loadingSpinner');
-        if (predictBtn) predictBtn.disabled = false;
+      showError(formError, 'Error processing prediction. Please try again.');
+      console.error('Prediction error:', error);
+      hide(loadingSpinner);
+      form.style.opacity = '1';
+      form.style.pointerEvents = 'auto';
     }
+  });
 }
 
 /**
- * Simulate prediction (demo mode)
- * In production, this would call the Python backend
+ * Generate mock VF values (simulating API response)
  */
-async function simulatePrediction(formData) {
-    return new Promise((resolve) => {
-        // Simulate 3-second processing
-        setTimeout(() => {
-            // Generate dummy VF data (61 points)
-            const vf = Array.from({ length: 61 }, () => 
-                Math.random() * 35
-            );
-
-            const result = {
-                timestamp: new Date().toISOString(),
-                age: formData.get('age') || null,
-                gender: formData.get('gender') || null,
-                iop: formData.get('iop') ? parseFloat(formData.get('iop')) : null,
-                cct: formData.get('cct') ? parseFloat(formData.get('cct')) : null,
-                steps: formData.get('steps') || 100,
-                vf: vf,
-                vf_mean: vf.reduce((a, b) => a + b) / vf.length,
-                vf_min: Math.min(...vf),
-                vf_max: Math.max(...vf),
-                vf_std: Math.sqrt(vf.reduce((sum, val) => sum + Math.pow(val - (vf.reduce((a, b) => a + b) / vf.length), 2), 0) / vf.length),
-                model_output_id: 'VF_' + new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15),
-                imageBase64: null // Will be set below
-            };
-
-            // Read image as base64
-            const imageInput = document.getElementById('fundusImage');
-            if (imageInput && imageInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    result.imageBase64 = e.target.result;
-                    resolve(result);
-                };
-                reader.readAsDataURL(imageInput.files[0]);
-            } else {
-                resolve(result);
-            }
-        }, 3000);
-    });
+function generateMockVFValues() {
+  // 61-point Humphrey 24-2 pattern
+  const values = [];
+  for (let i = 0; i < 61; i++) {
+    // Generate realistic VF values (0-35 dB range, with some variation)
+    const baseValue = 28 + (Math.random() - 0.5) * 8;
+    const value = Math.max(0, Math.min(35, baseValue));
+    values.push(parseFloat(value.toFixed(1)));
+  }
+  return values;
 }
 
-// ============================================================================
-// Prediction Results Display
-// ============================================================================
+/**
+ * Calculate VF statistics
+ */
+function calculateVFStats(values) {
+  const mean = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2);
+  const min = Math.min(...values).toFixed(2);
+  const max = Math.max(...values).toFixed(2);
 
-function initPredictionResults() {
-    const predictionResult = getSessionData('predictionResult');
-    if (!predictionResult) {
-        document.body.innerHTML = '<div style="padding:40px;text-align:center;"><h2>No prediction result found.</h2><p><a href="patient-details.html">Start a new prediction</a></p></div>';
-        return;
+  const variance =
+    values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+  const std = Math.sqrt(variance).toFixed(2);
+
+  return { mean, min, max, std };
+}
+
+// ==========================================
+// FEEDBACK PAGE (feedback.html)
+// ==========================================
+
+/**
+ * Initialize Feedback Page
+ */
+function initFeedbackPage() {
+  const form = document.getElementById('feedbackForm');
+  const messageTextarea = document.getElementById('message');
+  const charCount = document.getElementById('charCount');
+  const submitBtn = document.getElementById('submitFeedback');
+  const successMessage = document.getElementById('feedbackSuccess');
+  const errorMessage = document.getElementById('feedbackError');
+
+  // Update character count
+  messageTextarea.addEventListener('input', function () {
+    charCount.textContent = this.value.length;
+    if (this.value.length > 2000) {
+      this.value = this.value.substring(0, 2000);
+      charCount.textContent = '2000';
+    }
+  });
+
+  // Handle form submission
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    hide(errorMessage);
+
+    // Validate required fields
+    const feedbackType = document.getElementById('feedbackType').value;
+    const message = messageTextarea.value.trim();
+
+    let hasErrors = false;
+
+    clearError(document.getElementById('typeError'));
+    clearError(document.getElementById('messageError'));
+
+    if (!feedbackType) {
+      showError(document.getElementById('typeError'), 'Please select a feedback type.');
+      hasErrors = true;
     }
 
-    // Display input parameters
-    document.getElementById('resultAge').textContent = predictionResult.age || '—';
-    document.getElementById('resultGender').textContent = predictionResult.gender || '—';
-    document.getElementById('resultIOP').textContent = predictionResult.iop !== null ? predictionResult.iop + ' mmHg' : '—';
-    document.getElementById('resultCCT').textContent = predictionResult.cct !== null ? predictionResult.cct + ' µm' : '—';
-    document.getElementById('resultSteps').textContent = predictionResult.steps || '—';
-    document.getElementById('resultOutputID').textContent = predictionResult.model_output_id || '—';
-
-    // Display input image
-    if (predictionResult.imageBase64) {
-        document.getElementById('inputImage').src = predictionResult.imageBase64;
+    if (!message) {
+      showError(document.getElementById('messageError'), 'Please provide your feedback.');
+      hasErrors = true;
     }
 
-    // Display VF statistics
-    document.getElementById('vfMean').textContent = predictionResult.vf_mean.toFixed(2);
-    document.getElementById('vfMin').textContent = predictionResult.vf_min.toFixed(2);
-    document.getElementById('vfMax').textContent = predictionResult.vf_max.toFixed(2);
-    document.getElementById('vfStd').textContent = predictionResult.vf_std.toFixed(2);
+    if (hasErrors) return;
 
-    // Render VF grid
-    renderVFGrid(predictionResult.vf);
-
-    // Populate VF values table
-    populateVFTable(predictionResult.vf);
-
-    // Download canvas button
-    const downloadBtn = document.getElementById('downloadCanvasBtn');
-    if (downloadBtn) {
-        downloadBtn.addEventListener('click', downloadVFGridImage);
+    // Validate email if provided
+    const email = document.getElementById('email').value.trim();
+    if (email && !isValidEmail(email)) {
+      showError(document.getElementById('emailError'), 'Please enter a valid email address.');
+      return;
     }
+
+    // Prepare feedback data
+    const feedbackData = {
+      type: feedbackType,
+      name: document.getElementById('name').value.trim() || null,
+      email: email || null,
+      message: message,
+      rating: document.querySelector('input[name="rating"]:checked')?.value || null,
+      consent: document.getElementById('consent').checked,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Save feedback to local storage (simulating backend storage)
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Save to localStorage
+      const feedbackHistory = JSON.parse(localStorage.getItem('feedbackHistory') || '[]');
+      feedbackHistory.push(feedbackData);
+      localStorage.setItem('feedbackHistory', JSON.stringify(feedbackHistory));
+
+      // Show success message
+      hide(form);
+      show(successMessage);
+
+      // Log for demonstration
+      console.log('Feedback submitted:', feedbackData);
+    } catch (error) {
+      showError(errorMessage, 'Error submitting feedback. Please try again.');
+      console.error('Feedback submission error:', error);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Feedback';
+    }
+  });
+}
+
+// ==========================================
+// RESULTS PAGE (prediction-result.html)
+// ==========================================
+
+/**
+ * Initialize Results Page
+ */
+function initResultsPage() {
+  // Retrieve data from sessionStorage
+  const predictionData = JSON.parse(sessionStorage.getItem('predictionData') || '{}');
+  const vfValues = JSON.parse(sessionStorage.getItem('vfResults') || '[]');
+
+  if (!vfValues || vfValues.length === 0) {
+    console.error('No VF results found');
+    return;
+  }
+
+  // Display input parameters
+  displayInputParameters(predictionData);
+
+  // Calculate and display statistics
+  displayVFStatistics(vfValues);
+
+  // Render VF grid visualization
+  renderVFGrid(vfValues);
+
+  // Populate VF table
+  populateVFTable(vfValues);
+
+  // Handle download button
+  const downloadBtn = document.getElementById('downloadCanvasBtn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', downloadCanvasAsImage);
+  }
+}
+
+/**
+ * Display input parameters
+ */
+function displayInputParameters(data) {
+  const resultAge = document.getElementById('resultAge');
+  const resultGender = document.getElementById('resultGender');
+  const resultIOP = document.getElementById('resultIOP');
+  const resultCCT = document.getElementById('resultCCT');
+  const resultSteps = document.getElementById('resultSteps');
+  const resultOutputID = document.getElementById('resultOutputID');
+  const inputImage = document.getElementById('inputImage');
+
+  if (resultAge) resultAge.textContent = data.age ? `${data.age} years` : '—';
+  if (resultGender) resultGender.textContent = data.gender
+    ? data.gender === 'M'
+      ? 'Male'
+      : 'Female'
+    : '—';
+  if (resultIOP) resultIOP.textContent = data.iop ? `${data.iop} mmHg` : '—';
+  if (resultCCT) resultCCT.textContent = data.cct ? `${data.cct} µm` : '—';
+  if (resultSteps) resultSteps.textContent = data.diffusionSteps
+    ? `${data.diffusionSteps} steps`
+    : '—';
+
+  // Generate output ID
+  const outputID = `OUT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+  if (resultOutputID) resultOutputID.textContent = outputID;
+
+  // Display input image
+  if (inputImage && data.imageBase64) {
+    inputImage.src = data.imageBase64;
+  }
+}
+
+/**
+ * Display VF statistics
+ */
+function displayVFStatistics(values) {
+  const stats = calculateVFStats(values);
+
+  const vfMean = document.getElementById('vfMean');
+  const vfMin = document.getElementById('vfMin');
+  const vfMax = document.getElementById('vfMax');
+  const vfStd = document.getElementById('vfStd');
+
+  if (vfMean) vfMean.textContent = stats.mean;
+  if (vfMin) vfMin.textContent = stats.min;
+  if (vfMax) vfMax.textContent = stats.max;
+  if (vfStd) vfStd.textContent = stats.std;
 }
 
 /**
  * Render VF grid on canvas
  */
-function renderVFGrid(vfValues) {
-    const canvas = document.getElementById('vfCanvas');
-    if (!canvas) return;
+function renderVFGrid(values) {
+  const canvas = document.getElementById('vfCanvas');
+  if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    const cellSize = 60;
-    const padding = 30;
-    const cols = 10;
-    const rows = 10;
-    
-    canvas.width = cols * cellSize + padding * 2;
-    canvas.height = rows * cellSize + padding * 2;
+  const ctx = canvas.getContext('2d');
+  const cellSize = 60;
+  const padding = 40;
+  const cols = 9;
+  const rows = 9;
 
-    // Map VF 61 points to grid
-    const grid = new Array(rows * cols).fill(null);
-    const positions = [
-        [0, 3], [0, 4], [0, 5], [0, 6],
-        [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7],
-        [2, 1], [2, 2], [2, 3], [2, 4], [2, 5], [2, 6], [2, 7], [2, 8],
-        [3, 1], [3, 2], [3, 3], [3, 4], [3, 5], [3, 6], [3, 7], [3, 8],
-        [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [4, 6], [4, 7], [4, 8],
-        [5, 1], [5, 2], [5, 3], [5, 4], [5, 5], [5, 6], [5, 7], [5, 8],
-        [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7], [6, 8],
-        [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7],
-        [8, 3], [8, 4], [8, 5], [8, 6],
-    ];
+  // Set canvas size
+  canvas.width = cols * cellSize + 2 * padding;
+  canvas.height = rows * cellSize + 2 * padding;
 
-    positions.forEach((pos, idx) => {
-        if (idx < vfValues.length) {
-            const cellIdx = pos[0] * cols + pos[1];
-            grid[cellIdx] = vfValues[idx];
-        }
-    });
+  // Fill background
+  ctx.fillStyle = '#071428';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw grid
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Draw border
+  ctx.strokeStyle = '#3a6fd8';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(padding, padding, cols * cellSize, rows * cellSize);
 
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            const x = padding + c * cellSize;
-            const y = padding + r * cellSize;
-            const value = grid[r * cols + c];
+  // 61-point Humphrey 24-2 layout (indices)
+  const vfLayout = [
+    [-1, -1, -1, -1, 0, 1, -1, -1, -1],
+    [-1, -1, -1, 2, 3, 4, 5, -1, -1],
+    [-1, -1, 6, 7, 8, 9, 10, 11, -1],
+    [-1, 12, 13, 14, 15, 16, 17, 18, 19],
+    [20, 21, 22, 23, 24, 25, 26, 27, 28],
+    [29, 30, 31, 32, 33, 34, 35, 36, 37],
+    [-1, 38, 39, 40, 41, 42, 43, 44, 45],
+    [-1, -1, 46, 47, 48, 49, 50, 51, -1],
+    [-1, -1, -1, 52, 53, 54, 55, -1, -1],
+  ];
 
-            if (value !== null) {
-                // Color gradient: yellow (low) to blue (high)
-                const normalized = Math.min(value / 35, 1.0);
-                const hue = 240 * (1 - normalized); // Blue to Yellow
-                ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-                ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
-
-                // Draw border
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
-
-                // Draw text
-                ctx.fillStyle = value > 17.5 ? '#000' : '#fff';
-                ctx.font = 'bold 12px Arial';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(value.toFixed(1), x + cellSize / 2, y + cellSize / 2);
-            } else {
-                ctx.fillStyle = '#1a1a2e';
-                ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
-            }
-        }
+  // Color scale function
+  function getColor(value) {
+    // Green (good) to red (poor) gradient
+    const normalized = Math.max(0, Math.min(35, value)) / 35;
+    if (normalized > 0.66) {
+      return '#10b981'; // Green
+    } else if (normalized > 0.33) {
+      return '#f59e0b'; // Orange
+    } else {
+      return '#ef4444'; // Red
     }
+  }
 
-    // Draw title
-    ctx.fillStyle = '#333';
-    ctx.font = 'bold 16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Visual Field Grid (61 Points, Humphrey 24-2)', canvas.width / 2, 15);
+  // Draw grid cells
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const valueIndex = vfLayout[r][c];
+      const x = padding + c * cellSize + cellSize / 2;
+      const y = padding + r * cellSize + cellSize / 2;
+
+      if (valueIndex >= 0) {
+        const value = values[valueIndex] || 0;
+        const color = getColor(value);
+
+        // Draw circle
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, cellSize / 2.5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Draw value
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 14px Barlow';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(value.toFixed(1), x, y);
+      }
+    }
+  }
+
+  // Draw legend
+  const legendY = canvas.height - 30;
+  const legendItems = [
+    { label: '>23 dB', color: '#10b981' },
+    { label: '12-23 dB', color: '#f59e0b' },
+    { label: '<12 dB', color: '#ef4444' },
+  ];
+
+  let legendX = padding;
+  ctx.font = '12px Barlow';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#a0aec0';
+
+  legendItems.forEach((item, index) => {
+    ctx.fillStyle = item.color;
+    ctx.fillRect(legendX, legendY, 12, 12);
+
+    ctx.fillStyle = '#a0aec0';
+    ctx.fillText(item.label, legendX + 16, legendY + 6);
+
+    legendX += 120;
+  });
 }
 
 /**
  * Populate VF values table
  */
-function populateVFTable(vfValues) {
-    const tbody = document.getElementById('vfTableBody');
-    if (!tbody) return;
+function populateVFTable(values) {
+  const tableBody = document.getElementById('vfTableBody');
+  if (!tableBody) return;
 
-    tbody.innerHTML = '';
-    vfValues.forEach((value, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${value.toFixed(2)}</td>
-        `;
-        tbody.appendChild(tr);
-    });
+  tableBody.innerHTML = '';
+
+  values.forEach((value, index) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${value.toFixed(2)}</td>
+    `;
+    tableBody.appendChild(row);
+  });
 }
 
 /**
- * Download VF grid image
+ * Download canvas as image
  */
-function downloadVFGridImage() {
-    const canvas = document.getElementById('vfCanvas');
-    if (!canvas) return;
+function downloadCanvasAsImage() {
+  const canvas = document.getElementById('vfCanvas');
+  if (!canvas) return;
 
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = `vf_grid_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
-    link.click();
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/png');
+  link.download = `vf-grid-${new Date().toISOString().split('T')[0]}.png`;
+  link.click();
 }
 
-// ============================================================================
-// Feedback Form
-// ============================================================================
-
-function initFeedbackForm() {
-    const form = document.getElementById('feedbackForm');
-    if (!form) return;
-
-    const messageInput = document.getElementById('message');
-    const charCount = document.getElementById('charCount');
-
-    // Character counter
-    if (messageInput && charCount) {
-        messageInput.addEventListener('input', (e) => {
-            charCount.textContent = e.target.value.length;
-            if (e.target.value.length > 2000) {
-                messageInput.value = messageInput.value.slice(0, 2000);
-                charCount.textContent = '2000';
-            }
-        });
-    }
-
-    // Form submission
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        await handleFeedbackSubmit();
-    });
+// ==========================================
+// EXPORT FOR TESTING
+// ==========================================
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    generateMockVFValues,
+    calculateVFStats,
+    isValidEmail,
+    formatDate,
+  };
 }
-
-/**
- * Handle feedback form submission
- */
-async function handleFeedbackSubmit() {
-    const feedbackType = document.getElementById('feedbackType').value;
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const message = document.getElementById('message').value.trim();
-    const rating = document.querySelector('input[name="rating"]:checked');
-    const consent = document.getElementById('consent').checked;
-
-    // Validate
-    let hasError = false;
-    if (!feedbackType) {
-        showError('type', 'Please select a feedback type.');
-        hasError = true;
-    } else {
-        clearError('type');
-    }
-
-    if (!message) {
-        showError('message', 'Please enter your feedback.');
-        hasError = true;
-    } else {
-        clearError('message');
-    }
-
-    if (hasError) return;
-
-    // Prepare feedback record
-    const feedback = {
-        timestamp: new Date().toISOString(),
-        type: feedbackType,
-        name: name || null,
-        email: email || null,
-        message: message,
-        rating: rating ? rating.value : null,
-        consent: consent
-    };
-
-    try {
-        // Log feedback locally (would normally send to server)
-        console.log('Feedback submitted:', feedback);
-        
-        // In production, you would send this to a backend:
-        // await fetch('/api/feedback', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(feedback)
-        // });
-
-        // Show success message
-        document.getElementById('feedbackForm').style.display = 'none';
-        showElement('feedbackSuccess');
-
-    } catch (error) {
-        console.error('Feedback submission error:', error);
-        const feedbackError = document.getElementById('feedbackError');
-        if (feedbackError) {
-            feedbackError.textContent = 'Error submitting feedback. Please try again.';
-            showElement('feedbackError');
-        }
-    }
-}
-
-// ============================================================================
-// Initialization
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Check which page we're on
-    const pathname = window.location.pathname;
-
-    if (pathname.includes('patient-details')) {
-        initPatientDetailsForm();
-    } else if (pathname.includes('prediction-result')) {
-        initPredictionResults();
-    } else if (pathname.includes('feedback')) {
-        initFeedbackForm();
-    }
-});
