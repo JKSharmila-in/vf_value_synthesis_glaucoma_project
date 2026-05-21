@@ -1,186 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback - VF Value Synthesis</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback - VF Value Synthesis</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #03080f;
+    --panel: rgba(8,22,41,0.85);
+    --field: #060f1e;
+    --border: rgba(255,255,255,0.07);
+    --border-focus: #3a6fd8;
+    --blue: #3a6fd8;
+    --blue-bright: #5b8fff;
+    --white: #ffffff;
+    --dim: #7a91b5;
+    --label: #8fa8cc;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: radial-gradient(ellipse at 50% 30%, #0c1f4a 0%, #071428 45%, #03080f 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: var(--white);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 83% 22%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 58% 78%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,0.15) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    padding: 0 16px;
+    animation: fadeUp 0.7s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .heading-underline {
+    width: 48px; height: 3px;
+    background: var(--blue);
+    margin: 0 auto 24px;
+    border-radius: 2px;
+  }
+
+  .form-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px 22px;
+    backdrop-filter: blur(10px);
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--label);
+    margin-bottom: 5px;
+    letter-spacing: 0.4px;
+  }
+
+  input[type="text"],
+  textarea {
+    width: 100%;
+    background: var(--field);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13.5px;
+    padding: 10px 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(58,111,216,0.12);
+  }
+
+  input::placeholder,
+  textarea::placeholder { color: transparent; }
+
+  textarea {
+    min-height: 80px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+    color: #fff;
+    border: none;
+    padding: 13px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 20px rgba(58,111,216,0.4);
+  }
+
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #4d84ff, #6f9fff);
+    box-shadow: 0 6px 28px rgba(77,132,255,0.6);
+    transform: translateY(-1px);
+  }
+
+  /* Success state */
+  .success-msg {
+    display: none;
+    text-align: center;
+    padding: 32px;
+  }
+
+  .success-msg h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    color: var(--blue-bright);
+  }
+
+  .success-msg p { color: var(--dim); font-size: 14px; margin-bottom: 20px; }
+
+  .btn-home {
+    display: inline-block;
+    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+    color: #fff;
+    border: none;
+    padding: 11px 32px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .btn-home:hover { transform: translateY(-1px); }
+
+  @media (max-width: 600px) {
+    html, body { overflow: auto; }
+    .form-card { padding: 18px 16px; }
+    .heading { font-size: 28px; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="header-title">Feedback</h1>
-                <p class="header-subtitle">Help us improve the VF Value Synthesis prototype</p>
-            </div>
-        </header>
+<div class="page">
+  <h1 class="heading">Feedback Form</h1>
+  <div class="heading-underline"></div>
 
-        <!-- Research Prototype Notice -->
-        <div class="disclaimer-banner">
-            <div class="disclaimer-icon">⚠️</div>
-            <div class="disclaimer-text">
-                <strong>Research Prototype Notice:</strong> This is a research prototype. Not for clinical diagnosis.
-            </div>
-        </div>
+  <div class="form-card">
+    <div id="formContent">
+      <div class="form-group">
+        <label>Name:</label>
+        <input type="text" id="fbName" autocomplete="name">
+      </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Feedback Form Section -->
-            <section class="section feedback-section">
-                <form id="feedbackForm" class="feedback-form">
-                    <!-- Feedback Type -->
-                    <div class="form-group">
-                        <label for="feedbackType" class="form-label">Feedback Type <span class="required-asterisk">*</span></label>
-                        <select id="feedbackType" name="feedbackType" required class="form-select">
-                            <option value="">-- Select --</option>
-                            <option value="bug">Bug Report</option>
-                            <option value="usability">Usability Suggestion</option>
-                            <option value="feature">Feature Request</option>
-                            <option value="clinical">Clinical Observation</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <span class="form-error" id="typeError"></span>
-                    </div>
+      <div class="form-group">
+        <label>Designation:</label>
+        <input type="text" id="fbDesignation">
+      </div>
 
-                    <!-- Your Name (Optional) -->
-                    <div class="form-group">
-                        <label for="name" class="form-label">Your Name <span class="optional-label">(Optional)</span></label>
-                        <input 
-                            type="text" 
-                            id="name" 
-                            name="name" 
-                            placeholder="e.g., Dr. Smith"
-                            class="form-input"
-                        >
-                    </div>
+      <div class="form-group">
+        <label>Affiliation:</label>
+        <input type="text" id="fbAffiliation">
+      </div>
 
-                    <!-- Your Email (Optional) -->
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email <span class="optional-label">(Optional)</span></label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
-                            placeholder="e.g., dr.smith@institution.org"
-                            class="form-input"
-                        >
-                        <span class="form-help-text">For follow-up questions only.</span>
-                    </div>
+      <div class="form-group">
+        <label>Feedback about the visual field synthesis:</label>
+        <textarea id="fbVF" rows="3"></textarea>
+      </div>
 
-                    <!-- Feedback Message -->
-                    <div class="form-group">
-                        <label for="message" class="form-label">Your Feedback <span class="required-asterisk">*</span></label>
-                        <textarea 
-                            id="message" 
-                            name="message" 
-                            rows="8" 
-                            placeholder="Please describe your feedback in detail..."
-                            required
-                            class="form-textarea"
-                        ></textarea>
-                        <span class="form-error" id="messageError"></span>
-                        <div class="char-count">
-                            <span id="charCount">0</span> / 2000 characters
-                        </div>
-                    </div>
+      <div class="form-group">
+        <label>Feedback about the webapp experience:</label>
+        <textarea id="fbWebapp" rows="3"></textarea>
+      </div>
 
-                    <!-- Rating (Optional) -->
-                    <div class="form-group">
-                        <label class="form-label">Overall Experience <span class="optional-label">(Optional)</span></label>
-                        <div class="rating-group">
-                            <label class="radio-label">
-                                <input type="radio" name="rating" value="excellent" class="form-radio">
-                                <span>Excellent</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="rating" value="good" class="form-radio">
-                                <span>Good</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="rating" value="neutral" class="form-radio">
-                                <span>Neutral</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="rating" value="poor" class="form-radio">
-                                <span>Poor</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Consent Checkbox -->
-                    <div class="form-group">
-                        <label class="checkbox-label-large">
-                            <input type="checkbox" id="consent" name="consent" class="form-checkbox">
-                            <span>I consent to the use of this feedback for research and prototype improvement.</span>
-                        </label>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <div class="form-actions">
-                        <button type="submit" id="submitFeedback" class="btn btn-primary btn-large">
-                            Submit Feedback
-                        </button>
-                        <a href="index.html" class="btn btn-secondary">Back to Home</a>
-                    </div>
-                </form>
-
-                <!-- Success Message -->
-                <div id="feedbackSuccess" class="success-message" style="display: none;">
-                    <h3>Thank You!</h3>
-                    <p>Your feedback has been recorded locally and will help improve future versions of this prototype.</p>
-                    <a href="index.html" class="btn btn-primary">Return to Home</a>
-                </div>
-
-                <!-- Error Message -->
-                <div id="feedbackError" class="error-message" style="display: none;"></div>
-            </section>
-
-            <!-- FAQ Section -->
-            <section class="section faq-section">
-                <h2>Frequently Asked Questions</h2>
-                
-                <div class="faq-item">
-                    <h4>Q: Where is my feedback stored?</h4>
-                    <p>A: Feedback is stored locally on your machine. No data is transmitted externally. You can review the records folder in the project repository.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h4>Q: Can I submit feedback without providing my name or email?</h4>
-                    <p>A: Yes, name and email are optional. However, providing an email allows us to follow up with you if needed.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h4>Q: What should I include in a bug report?</h4>
-                    <p>A: Please describe the exact steps to reproduce the issue, what you expected to happen, and what actually happened. Include your browser and operating system if relevant.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h4>Q: How is clinical feedback used?</h4>
-                    <p>A: Clinical observations from ophthalmologists are invaluable for validating model predictions and identifying areas for improvement in the training process.</p>
-                </div>
-
-                <div class="faq-item">
-                    <h4>Q: Can I request new features?</h4>
-                    <p>A: Absolutely! Select "Feature Request" as the feedback type and describe the feature you'd like to see. We review all suggestions carefully.</p>
-                </div>
-            </section>
-
-            <!-- Contact Information -->
-            <section class="section contact-section">
-                <h2>Contact & Support</h2>
-                <p>For questions, issues, or institutional inquiries about this research prototype, please reach out to the development team.</p>
-                <p><strong>Note:</strong> This is a research prototype. For urgent clinical matters, please consult a qualified ophthalmologist directly.</p>
-            </section>
-        </main>
+      <button class="btn-submit" onclick="submitFeedback()">Submit</button>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
-    </footer>
+    <div class="success-msg" id="successMsg">
+      <h3>Thank You!</h3>
+      <p>Your feedback has been recorded and will help improve future versions of this prototype.</p>
+      <a href="index.html" class="btn-home">Return to Home</a>
+    </div>
+  </div>
+</div>
 
-    <!-- JavaScript -->
-    <script src="js/app.js"></script>
+<script>
+  function submitFeedback() {
+    const fb = {
+      name: document.getElementById('fbName').value,
+      designation: document.getElementById('fbDesignation').value,
+      affiliation: document.getElementById('fbAffiliation').value,
+      vfFeedback: document.getElementById('fbVF').value,
+      webappFeedback: document.getElementById('fbWebapp').value,
+      timestamp: new Date().toISOString()
+    };
+
+    // Store locally
+    const existing = JSON.parse(localStorage.getItem('vfFeedback') || '[]');
+    existing.push(fb);
+    localStorage.setItem('vfFeedback', JSON.stringify(existing));
+
+    document.getElementById('formContent').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+  }
+</script>
 </body>
 </html>
