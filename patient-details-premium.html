@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Details - VF Value Synthesis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #030914 0%, #071126 50%, #0a0f1f 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .page-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-accent {
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #2563EB, transparent);
+            margin: 0.75rem auto 0;
+        }
+
+        /* Form Card Container */
+        .form-container {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 16px;
+            padding: clamp(1.5rem, 4vw, 2.5rem);
+            width: 100%;
+            max-width: 480px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .form-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .form-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .form-container::-webkit-scrollbar-thumb {
+            background: rgba(37, 99, 235, 0.3);
+            border-radius: 10px;
+        }
+
+        .form-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(37, 99, 235, 0.5);
+        }
+
+        /* Form Fieldset */
+        .form-fieldset {
+            border: none;
+            margin-bottom: 1.5rem;
+            padding: 0;
+        }
+
+        .form-fieldset:last-of-type {
+            margin-bottom: 1rem;
+        }
+
+        .fieldset-legend {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .required-asterisk {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .form-help-text {
+            font-size: 0.8rem;
+            color: #7A8B9E;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: clamp(0.8rem, 2vw, 0.95rem);
+            color: #7A8B9E;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* File Upload Input */
+        .form-input-file {
+            display: none;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(37, 99, 235, 0.4);
+            border-radius: 12px;
+            padding: 2rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .upload-zone:hover {
+            border-color: #2563EB;
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .upload-zone.drag-over {
+            border-color: #2563EB;
+            background: rgba(37, 99, 235, 0.15);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.75rem;
+            color: #7A8B9E;
+        }
+
+        /* Image Preview */
+        .image-preview-container {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .image-preview-label {
+            font-size: 0.8rem;
+            color: #7A8B9E;
+            margin-bottom: 0.75rem;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        /* Text & Number Inputs */
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder,
+        .form-select {
+            color: #7A8B9E;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #2563EB;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .form-input:disabled,
+        .form-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Checkbox Group */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #ffffff;
+            user-select: none;
+        }
+
+        .form-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2563EB;
+        }
+
+        /* Form Slider */
+        .form-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .form-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2563EB;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .form-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.7);
+        }
+
+        .form-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #2563EB;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .form-slider::-moz-range-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.7);
+        }
+
+        .slider-display {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.95rem;
+            color: #ffffff;
+        }
+
+        #stepsValue {
+            font-weight: 600;
+            color: #2563EB;
+            font-size: 1.1rem;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563EB, #1e40af);
+            color: #ffffff;
+            width: 100%;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #2563EB;
+            border: 1px solid #2563EB;
+            width: 100%;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+
+        .spinner-circle {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(37, 99, 235, 0.2);
+            border-top-color: #2563EB;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            font-size: 0.9rem;
+            color: #7A8B9E;
+            text-align: center;
+        }
+
+        /* Error & Success Messages */
+        .error-message,
+        .success-message {
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+
+        .form-error {
+            display: block;
+            font-size: 0.75rem;
+            color: #fca5a5;
+            margin-top: 0.25rem;
+            min-height: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 1rem;
+            }
+
+            .form-container {
+                max-width: 100%;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h1 class="header-title">PATIENT DETAILS</h1>
+            <div class="header-accent"></div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-container">
+            <form id="predictionForm">
+                <!-- Step 1: Fundus Image -->
+                <fieldset class="form-fieldset">
+                    <legend class="fieldset-legend">
+                        <span>📸 Upload Fundus Image</span>
+                        <span class="required-asterisk">*</span>
+                    </legend>
+                    <p class="form-help-text">High-quality fundus photograph (JPG or PNG)</p>
+                    
+                    <div class="form-group">
+                        <div class="upload-zone" id="uploadZone">
+                            <div class="upload-icon">☁️</div>
+                            <div class="upload-text">Click to upload image</div>
+                            <div class="upload-subtext">or drag and drop</div>
+                        </div>
+                        <input 
+                            type="file" 
+                            id="fundusImage" 
+                            name="fundusImage" 
+                            accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                            class="form-input-file"
+                            required
+                        >
+                        <span class="form-error" id="imageError"></span>
+                    </div>
+
+                    <div id="imagePreview" class="image-preview-container" style="display: none;">
+                        <p class="image-preview-label">Preview:</p>
+                        <img id="previewImg" src="" alt="Fundus image preview" class="preview-image">
+                    </div>
+                </fieldset>
+
+                <!-- Step 2: Clinical Parameters -->
+                <fieldset class="form-fieldset">
+                    <legend class="fieldset-legend">
+                        <span>👤 Clinical Parameters</span>
+                        <span style="color: #7A8B9E; font-weight: 400; font-size: 0.85rem;">(Optional)</span>
+                    </legend>
+                    <p class="form-help-text">Leave unchecked to use model defaults</p>
+
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="useAge" name="useAge" class="form-checkbox">
+                            <span>Age (years)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="useGender" name="useGender" class="form-checkbox">
+                            <span>Gender</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="useIOP" name="useIOP" class="form-checkbox">
+                            <span>IOP (mmHg)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="useCCT" name="useCCT" class="form-checkbox">
+                            <span>CCT (µm)</span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age" class="form-label">Age</label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            name="age" 
+                            min="1" 
+                            max="120" 
+                            step="1"
+                            placeholder="e.g., 55"
+                            disabled
+                            class="form-input"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender" class="form-label">Gender</label>
+                        <select id="gender" name="gender" disabled class="form-select">
+                            <option value="">-- Select Gender --</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="iop" class="form-label">IOP (mmHg)</label>
+                        <input 
+                            type="number" 
+                            id="iop" 
+                            name="iop" 
+                            min="0" 
+                            max="60" 
+                            step="0.1"
+                            placeholder="e.g., 14.5"
+                            disabled
+                            class="form-input"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cct" class="form-label">CCT (µm)</label>
+                        <input 
+                            type="number" 
+                            id="cct" 
+                            name="cct" 
+                            min="200" 
+                            max="900" 
+                            step="1"
+                            placeholder="e.g., 540"
+                            disabled
+                            class="form-input"
+                        >
+                    </div>
+                </fieldset>
+
+                <!-- Step 3: Sampling Quality -->
+                <fieldset class="form-fieldset">
+                    <legend class="fieldset-legend">
+                        <span>⚙️ Sampling Quality</span>
+                        <span style="color: #7A8B9E; font-weight: 400; font-size: 0.85rem;">(Optional)</span>
+                    </legend>
+                    <p class="form-help-text">Higher steps = better quality but slower</p>
+
+                    <div class="form-group">
+                        <label for="diffusionSteps" class="form-label">Diffusion Steps</label>
+                        <input 
+                            type="range" 
+                            id="diffusionSteps" 
+                            name="diffusionSteps" 
+                            min="10" 
+                            max="300" 
+                            step="10"
+                            value="100"
+                            class="form-slider"
+                        >
+                        <div class="slider-display">
+                            <span id="stepsValue">100</span>
+                            <span> steps</span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                    <button type="submit" id="predictBtn" class="btn btn-primary" disabled>
+                        Predict
+                    </button>
+                    <a href="index.html" class="btn btn-secondary">← Back to Home</a>
+                </div>
+            </form>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-spinner" style="display: none;">
+                <div class="spinner-circle"></div>
+                <p id="loadingText">Processing prediction...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="formError" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM Elements =====
+        const uploadZone = document.getElementById('uploadZone');
+        const fundusImageInput = document.getElementById('fundusImage');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const imageError = document.getElementById('imageError');
+        const predictBtn = document.getElementById('predictBtn');
+        const predictionForm = document.getElementById('predictionForm');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const formError = document.getElementById('formError');
+
+        const useAgeCheckbox = document.getElementById('useAge');
+        const useGenderCheckbox = document.getElementById('useGender');
+        const useIOPCheckbox = document.getElementById('useIOP');
+        const useCCTCheckbox = document.getElementById('useCCT');
+
+        const ageInput = document.getElementById('age');
+        const genderInput = document.getElementById('gender');
+        const iopInput = document.getElementById('iop');
+        const cctInput = document.getElementById('cct');
+        const stepsInput = document.getElementById('diffusionSteps');
+        const stepsValue = document.getElementById('stepsValue');
+
+        // ===== File Upload Handling =====
+        uploadZone.addEventListener('click', () => fundusImageInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fundusImageInput.files = files;
+                handleImageSelect();
+            }
+        });
+
+        fundusImageInput.addEventListener('change', handleImageSelect);
+
+        function handleImageSelect() {
+            const file = fundusImageInput.files[0];
+            imageError.textContent = '';
+
+            if (!file) {
+                imagePreview.style.display = 'none';
+                predictBtn.disabled = true;
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                imageError.textContent = 'Please upload a JPG or PNG image.';
+                imagePreview.style.display = 'none';
+                predictBtn.disabled = true;
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                imagePreview.style.display = 'block';
+                predictBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ===== Checkbox Enable/Disable Inputs =====
+        useAgeCheckbox.addEventListener('change', () => {
+            ageInput.disabled = !useAgeCheckbox.checked;
+            if (!useAgeCheckbox.checked) ageInput.value = '';
+        });
+
+        useGenderCheckbox.addEventListener('change', () => {
+            genderInput.disabled = !useGenderCheckbox.checked;
+            if (!useGenderCheckbox.checked) genderInput.value = '';
+        });
+
+        useIOPCheckbox.addEventListener('change', () => {
+            iopInput.disabled = !useIOPCheckbox.checked;
+            if (!useIOPCheckbox.checked) iopInput.value = '';
+        });
+
+        useCCTCheckbox.addEventListener('change', () => {
+            cctInput.disabled = !useCCTCheckbox.checked;
+            if (!useCCTCheckbox.checked) cctInput.value = '';
+        });
+
+        // ===== Slider Value Display =====
+        stepsInput.addEventListener('input', () => {
+            stepsValue.textContent = stepsInput.value;
+        });
+
+        // ===== Form Submission =====
+        predictionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            formError.style.display = 'none';
+            loadingSpinner.style.display = 'flex';
+            predictBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('image', fundusImageInput.files[0]);
+
+                if (useAgeCheckbox.checked && ageInput.value) {
+                    formData.append('age', ageInput.value);
+                }
+                if (useGenderCheckbox.checked && genderInput.value) {
+                    formData.append('gender', genderInput.value);
+                }
+                if (useIOPCheckbox.checked && iopInput.value) {
+                    formData.append('iop', iopInput.value);
+                }
+                if (useCCTCheckbox.checked && cctInput.value) {
+                    formData.append('cct', cctInput.value);
+                }
+                formData.append('steps', stepsInput.value);
+
+                // Replace with your backend URL
+                const response = await fetch('http://localhost:5000/api/predict', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors'
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Store result in sessionStorage for the result page
+                    sessionStorage.setItem('predictionResult', JSON.stringify(result));
+                    // Redirect to results page
+                    window.location.href = 'prediction-result-premium.html';
+                } else {
+                    throw new Error(result.error || 'Prediction failed');
+                }
+            } catch (error) {
+                formError.textContent = `Error: ${error.message}`;
+                formError.style.display = 'block';
+                loadingSpinner.style.display = 'none';
+                predictBtn.disabled = fundusImageInput.files.length === 0;
+            }
+        });
+    </script>
+</body>
+</html>
