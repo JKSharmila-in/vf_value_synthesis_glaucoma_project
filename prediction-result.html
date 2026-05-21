@@ -159,7 +159,8 @@
   #fundusImg {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Shows entire input image clearly without cropped clipping */
+    background-color: #000;
     border-radius: 6px;
     display: none;
   }
@@ -170,9 +171,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(ellipse at 40% 45%, #7a2c00 0%, #3a1200 40%, #000 100%);
+    background: radial-gradient(ellipse at 40% 45%, #223355 0%, #081220 70%, #000 100%);
     border-radius: 6px;
-    color: #555;
+    color: var(--dim);
     font-size: 13px;
     flex-direction: column;
     gap: 8px;
@@ -288,7 +289,6 @@
 
   <div class="results-grid">
 
-    <!-- Patient Info -->
     <div class="panel">
       <div class="panel-title">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:5px;vertical-align:middle">
@@ -351,7 +351,6 @@
       </div>
     </div>
 
-    <!-- Fundus Image -->
     <div class="panel fundus-panel">
       <div class="panel-title">Fundus Image (Input)</div>
       <div class="fundus-img-wrap">
@@ -367,7 +366,6 @@
       </div>
     </div>
 
-    <!-- VF Grid -->
     <div class="panel vf-panel">
       <div class="panel-title">
         Predicted Visual Field (dB)
@@ -379,7 +377,7 @@
       </div>
       <div class="vf-legend">
         <div class="legend-item">
-          <span style="font-size:11px;color:#555;">△</span>
+          <span style="font-weight: bold; font-size:12px; color:#222;">△</span>
           <span>Blind Spot</span>
         </div>
         <div class="legend-item" style="margin-left:auto;">
@@ -408,7 +406,7 @@
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M13 2H3a1 1 0 00-1 1v8a1 1 0 001 1h8l3 2V3a1 1 0 00-1-1z"
               stroke="currentColor" stroke-width="1.4" fill="none" stroke-linejoin="round"/>
-      </svg>
+    </svg>
       Submit Feedback
     </a>
   </div>
@@ -419,35 +417,20 @@
 </div>
 
 <script>
-// ─── Humphrey 24-2: 54 test locations ───────────────────────────────────────
-// Each row: array of column indices (0-based within an 9-wide grid, centred)
-// Spatial layout mirrors the printout in the reference image
-//
-// Grid columns cover x = -27° to +27° in 6° steps  → 10 positions (cols 0-9)
-// Grid rows    cover y = +21° to -21° in 6° steps  → 8 rows
-//
-// Blind spot at ~(+15°, ±3°) → col 7, rows 3 & 4
-
 const ROWS = 8;
 const COLS = 10;
 
-// 1 = test point present, 0 = empty, 2 = blind spot
 const GRID = [
-  //  0  1  2  3  4  5  6  7  8  9
-  [  0, 0, 0, 1, 1, 1, 1, 0, 0, 0 ],  // row 0  y=+21°
-  [  0, 0, 1, 1, 1, 1, 1, 1, 0, 0 ],  // row 1  y=+15°
-  [  0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],  // row 2  y=+9°
-  [  1, 1, 1, 1, 1, 1, 1, 2, 1, 1 ],  // row 3  y=+3°  (blind spot col 7)
-  [  1, 1, 1, 1, 1, 1, 1, 2, 1, 1 ],  // row 4  y=-3°  (blind spot col 7)
-  [  0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],  // row 5  y=-9°
-  [  0, 0, 1, 1, 1, 1, 1, 1, 0, 0 ],  // row 6  y=-15°
-  [  0, 0, 0, 1, 1, 1, 1, 0, 0, 0 ],  // row 7  y=-21°
+  [  0, 0, 0, 1, 1, 1, 1, 0, 0, 0 ],  
+  [  0, 0, 1, 1, 1, 1, 1, 1, 0, 0 ],  
+  [  0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],  
+  [  1, 1, 1, 1, 1, 1, 1, 2, 1, 1 ],  
+  [  1, 1, 1, 1, 1, 1, 1, 2, 1, 1 ],  
+  [  0, 1, 1, 1, 1, 1, 1, 1, 1, 0 ],  
+  [  0, 0, 1, 1, 1, 1, 1, 1, 0, 0 ],  
+  [  0, 0, 0, 1, 1, 1, 1, 0, 0, 0 ],  
 ];
 
-// Count total test (non-blind) points = 54
-// Blind spots (value 2) will show △ symbol
-
-// Default demo values (54 numbers, left-to-right, top-to-bottom, skipping blanks)
 const DEFAULT_VF = [
   19, 10, 10, 17,
   19, 14, 17, 17, 17, 18,
@@ -459,31 +442,42 @@ const DEFAULT_VF = [
   25, 27, 25, 24,
 ];
 
-// ─── Load patient data & fundus image ───────────────────────────────────────
 function loadData() {
-  // Patient fields
-  const patient = JSON.parse(sessionStorage.getItem('patientData') || '{}');
+  // Try retrieving from sessionStorage first
+  let patient = JSON.parse(sessionStorage.getItem('patientData') || '{}');
+
+  // Fallback: If missing, extract cleanly from current page URL search params
+  const urlParams = new URLSearchParams(window.location.search);
+  if (!patient.age && urlParams.has('age')) {
+    patient = {
+      age: urlParams.get('age'),
+      gender: urlParams.get('gender'),
+      iop: urlParams.get('iop'),
+      cct: urlParams.get('cct')
+    };
+  }
+
+  // Bind values dynamically
   document.getElementById('dispAge').textContent    = patient.age    || '58';
-  document.getElementById('dispGender').textContent = patient.gender === 'F' ? 'Female' : 'Male';
+  let rawGender = patient.gender || 'Male';
+  document.getElementById('dispGender').textContent = (rawGender === 'F' || rawGender === 'Female') ? 'Female' : 'Male';
   document.getElementById('dispIOP').textContent    = patient.iop    || '18';
   document.getElementById('dispCCT').textContent    = patient.cct    || '540';
 
-  // Fundus image
+  // Render fundus image accurately
   const fundusData = sessionStorage.getItem('fundusImage');
-  if (fundusData) {
+  if (fundusData && fundusData.trim() !== "") {
     const img = document.getElementById('fundusImg');
     img.src = fundusData;
     img.style.display = 'block';
     document.getElementById('fundusPlaceholder').style.display = 'none';
   }
 
-  // VF values
   const stored = sessionStorage.getItem('vfValues');
   const vfValues = stored ? JSON.parse(stored) : DEFAULT_VF;
   drawVF(vfValues);
 }
 
-// ─── Draw VF grid ────────────────────────────────────────────────────────────
 function drawVF(values) {
   const canvas  = document.getElementById('vfCanvas');
   const wrap    = canvas.parentElement;
@@ -495,14 +489,13 @@ function drawVF(values) {
 
   const ctx = canvas.getContext('2d');
 
-  // White background
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, W, H);
 
-  // Padding for axis labels
-  const PAD_LEFT   = 36;
-  const PAD_TOP    = 24;
-  const PAD_RIGHT  = 12;
+  // Balanced minimal padding - Axis text space allocations removed entirely
+  const PAD_LEFT   = 16;
+  const PAD_TOP    = 16;
+  const PAD_RIGHT  = 16;
   const PAD_BOTTOM = 16;
 
   const gridW = W - PAD_LEFT - PAD_RIGHT;
@@ -511,33 +504,16 @@ function drawVF(values) {
   const cellW = gridW / COLS;
   const cellH = gridH / ROWS;
 
-  // ── Axis lines ──────────────────────────────────────────────────────────
-  ctx.strokeStyle = '#aaaaaa';
-  ctx.lineWidth   = 0.8;
+  // Clean axis dividers
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth   = 1.2;
 
-  // Vertical centre line (between col 4 and 5 → x = PAD_LEFT + 5*cellW)
   const cx = PAD_LEFT + 5 * cellW;
   ctx.beginPath(); ctx.moveTo(cx, PAD_TOP); ctx.lineTo(cx, H - PAD_BOTTOM); ctx.stroke();
 
-  // Horizontal centre line (between row 3 and 4 → y = PAD_TOP + 4*cellH)
   const cy = PAD_TOP + 4 * cellH;
   ctx.beginPath(); ctx.moveTo(PAD_LEFT, cy); ctx.lineTo(W - PAD_RIGHT, cy); ctx.stroke();
 
-  // ── Axis labels ─────────────────────────────────────────────────────────
-  ctx.fillStyle = '#5a7ab5';
-  ctx.font      = 'bold 10px Barlow, sans-serif';
-  ctx.textAlign = 'center';
-
-  // "Off" at top (fixation)
-  ctx.fillText('Off', cx, PAD_TOP - 8);
-
-  // "30°" on left mid
-  ctx.save();
-  ctx.textAlign = 'right';
-  ctx.fillText('30°', PAD_LEFT - 4, cy + 4);
-  ctx.restore();
-
-  // ── Draw numbers / blind spots ──────────────────────────────────────────
   let idx = 0;
 
   for (let r = 0; r < ROWS; r++) {
@@ -549,30 +525,29 @@ function drawVF(values) {
       const y = PAD_TOP  + r * cellH + cellH / 2;
 
       if (cell === 2) {
-        // ── Blind spot: draw hollow triangle ──────────────────────────────
-        const ts = Math.min(cellW, cellH) * 0.28;
-        ctx.strokeStyle = '#555';
-        ctx.lineWidth   = 1;
+        // High visibility blind spot indicators
+        const ts = Math.min(cellW, cellH) * 0.25;
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth   = 1.5;
         ctx.beginPath();
         ctx.moveTo(x,      y - ts);
-        ctx.lineTo(x + ts, y + ts * 0.75);
-        ctx.lineTo(x - ts, y + ts * 0.75);
+        ctx.lineTo(x + ts, y + ts * 0.8);
+        ctx.lineTo(x - ts, y + ts * 0.8);
         ctx.closePath();
         ctx.stroke();
       } else {
-        // ── Test point: draw number ────────────────────────────────────────
+        // High-contrast, completely readable crisp numerical weights
         const val = (values[idx] !== undefined && values[idx] !== null)
                     ? Math.round(values[idx])
                     : Math.round(18 + Math.random() * 10);
         idx++;
 
-        // Color: low values red, normal values dark grey/black
-        ctx.fillStyle = val <= 5  ? '#cc2222'
-                      : val <= 15 ? '#885500'
-                      :             '#222222';
+        ctx.fillStyle = val <= 5  ? '#d32f2f'
+                      : val <= 15 ? '#d97706'
+                      :             '#0f172a';
 
-        const fontSize = Math.max(8, Math.min(cellW * 0.38, cellH * 0.42, 13));
-        ctx.font      = `600 ${fontSize}px Barlow, monospace`;
+        const fontSize = Math.max(10, Math.min(cellW * 0.45, cellH * 0.45, 14));
+        ctx.font      = `700 ${fontSize}px 'Barlow', monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(val, x, y);
@@ -581,7 +556,6 @@ function drawVF(values) {
   }
 }
 
-// ─── Download canvas ─────────────────────────────────────────────────────────
 function downloadReport() {
   const canvas = document.getElementById('vfCanvas');
   const link   = document.createElement('a');
@@ -590,8 +564,7 @@ function downloadReport() {
   link.click();
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
-window.addEventListener('load',   loadData);
+window.addEventListener('load', loadData);
 window.addEventListener('resize', () => {
   const stored = sessionStorage.getItem('vfValues');
   drawVF(stored ? JSON.parse(stored) : DEFAULT_VF);
