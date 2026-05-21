@@ -4,201 +4,152 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Feedback - VF Value Synthesis</title>
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #03080f;
-    --panel: rgba(8,22,41,0.85);
-    --field: #060f1e;
-    --border: rgba(255,255,255,0.07);
-    --border-focus: #3a6fd8;
-    --blue: #3a6fd8;
-    --blue-bright: #5b8fff;
-    --white: #ffffff;
-    --dim: #7a91b5;
-    --label: #8fa8cc;
-  }
+:root {
+  --bg: #03080f;
+  --panel: rgba(8,22,41,0.85);
+  --field: #060f1e;
+  --border: rgba(255,255,255,0.07);
+  --border-focus: #3a6fd8;
+  --blue: #3a6fd8;
+  --blue-bright: #5b8fff;
+  --white: #ffffff;
+  --dim: #7a91b5;
+  --label: #8fa8cc;
+}
 
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
 
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: radial-gradient(ellipse at 50% 30%, #0c1f4a 0%, #071428 45%, #03080f 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: var(--white);
-  }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: radial-gradient(ellipse at 50% 30%, #0c1f4a 0%, #071428 45%, #03080f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: var(--white);
+}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 83% 22%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 58% 78%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 22% 88%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.1) 0%, transparent 100%);
-    pointer-events: none;
-  }
+.page {
+  width: 100%;
+  max-width: 520px;
+  padding: 0 16px;
+  animation: fadeUp 0.7s ease forwards;
+}
 
-  .page {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 520px;
-    padding: 0 16px;
-    animation: fadeUp 0.7s ease forwards;
-  }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+.heading {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
 
-  .heading {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 900;
-    letter-spacing: 3px;
-    text-align: center;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
+.heading-underline {
+  width: 48px;
+  height: 3px;
+  background: var(--blue);
+  margin: 0 auto 24px;
+  border-radius: 2px;
+}
 
-  .heading-underline {
-    width: 48px; height: 3px;
-    background: var(--blue);
-    margin: 0 auto 24px;
-    border-radius: 2px;
-  }
+.form-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px 28px 22px;
+  backdrop-filter: blur(10px);
+}
 
-  .form-card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 24px 28px 22px;
-    backdrop-filter: blur(10px);
-  }
+.form-group {
+  margin-bottom: 14px;
+}
 
-  .form-group {
-    margin-bottom: 14px;
-  }
+label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--label);
+  margin-bottom: 5px;
+}
 
-  label {
-    display: block;
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--label);
-    margin-bottom: 5px;
-    letter-spacing: 0.4px;
-  }
+input, textarea {
+  width: 100%;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--white);
+  font-family: 'Barlow', sans-serif;
+  font-size: 13.5px;
+  padding: 10px 13px;
+  outline: none;
+}
 
-  input[type="text"],
-  textarea {
-    width: 100%;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--white);
-    font-family: 'Barlow', sans-serif;
-    font-size: 13.5px;
-    padding: 10px 13px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    resize: none;
-  }
+textarea { min-height: 80px; resize: none; }
 
-  input[type="text"]:focus,
-  textarea:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(58,111,216,0.12);
-  }
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+  color: #fff;
+  border: none;
+  padding: 13px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 6px;
+}
 
-  input::placeholder,
-  textarea::placeholder { color: transparent; }
+.success-msg {
+  display: none;
+  text-align: center;
+  padding: 32px;
+}
 
-  textarea {
-    min-height: 80px;
-  }
+.success-msg h3 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  color: var(--blue-bright);
+}
 
-  .btn-submit {
-    width: 100%;
-    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
-    color: #fff;
-    border: none;
-    padding: 13px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 6px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 20px rgba(58,111,216,0.4);
-  }
+.success-msg p {
+  color: var(--dim);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
 
-  .btn-submit:hover {
-    background: linear-gradient(135deg, #4d84ff, #6f9fff);
-    box-shadow: 0 6px 28px rgba(77,132,255,0.6);
-    transform: translateY(-1px);
-  }
-
-  /* Success state */
-  .success-msg {
-    display: none;
-    text-align: center;
-    padding: 32px;
-  }
-
-  .success-msg h3 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    color: var(--blue-bright);
-  }
-
-  .success-msg p { color: var(--dim); font-size: 14px; margin-bottom: 20px; }
-
-  .btn-home {
-    display: inline-block;
-    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
-    color: #fff;
-    border: none;
-    padding: 11px 32px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    border-radius: 6px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.25s ease;
-  }
-
-  .btn-home:hover { transform: translateY(-1px); }
-
-  @media (max-width: 600px) {
-    html, body { overflow: auto; }
-    .form-card { padding: 18px 16px; }
-    .heading { font-size: 28px; }
-  }
+.btn-home {
+  display: inline-block;
+  background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+  color: #fff;
+  padding: 11px 32px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-decoration: none;
+}
 </style>
 </head>
+
 <body>
 <div class="page">
   <h1 class="heading">Feedback Form</h1>
@@ -207,60 +158,68 @@
   <div class="form-card">
     <div id="formContent">
       <div class="form-group">
-        <label>Name:</label>
-        <input type="text" id="fbName" autocomplete="name">
+        <label>Name</label>
+        <input type="text" id="fbName">
       </div>
 
       <div class="form-group">
-        <label>Designation:</label>
+        <label>Designation</label>
         <input type="text" id="fbDesignation">
       </div>
 
       <div class="form-group">
-        <label>Affiliation:</label>
+        <label>Affiliation</label>
         <input type="text" id="fbAffiliation">
       </div>
 
       <div class="form-group">
-        <label>Feedback about the visual field synthesis:</label>
-        <textarea id="fbVF" rows="3"></textarea>
+        <label>Feedback about Visual Field synthesis</label>
+        <textarea id="fbVF"></textarea>
       </div>
 
       <div class="form-group">
-        <label>Feedback about the webapp experience:</label>
-        <textarea id="fbWebapp" rows="3"></textarea>
+        <label>Feedback about Web Application</label>
+        <textarea id="fbWebapp"></textarea>
       </div>
 
       <button class="btn-submit" onclick="submitFeedback()">Submit</button>
     </div>
 
     <div class="success-msg" id="successMsg">
-      <h3>Thank You!</h3>
-      <p>Your feedback has been recorded and will help improve future versions of this prototype.</p>
+      <h3>Thank You</h3>
+      <p>Your feedback has been recorded successfully.</p>
       <a href="index.html" class="btn-home">Return to Home</a>
     </div>
   </div>
 </div>
 
 <script>
-  function submitFeedback() {
-    const fb = {
-      name: document.getElementById('fbName').value,
-      designation: document.getElementById('fbDesignation').value,
-      affiliation: document.getElementById('fbAffiliation').value,
-      vfFeedback: document.getElementById('fbVF').value,
-      webappFeedback: document.getElementById('fbWebapp').value,
-      timestamp: new Date().toISOString()
-    };
+/* 🔐 Guard: ensure prediction exists */
+const predictionData = JSON.parse(localStorage.getItem("predictionData"));
+if (!predictionData) {
+  alert("No patient prediction found. Redirecting to home.");
+  window.location.href = "index.html";
+}
 
-    // Store locally
-    const existing = JSON.parse(localStorage.getItem('vfFeedback') || '[]');
-    existing.push(fb);
-    localStorage.setItem('vfFeedback', JSON.stringify(existing));
+/* 📝 Submit feedback */
+function submitFeedback() {
+  const fb = {
+    patientData: predictionData,
+    name: fbName.value,
+    designation: fbDesignation.value,
+    affiliation: fbAffiliation.value,
+    vfFeedback: fbVF.value,
+    webappFeedback: fbWebapp.value,
+    timestamp: new Date().toISOString()
+  };
 
-    document.getElementById('formContent').style.display = 'none';
-    document.getElementById('successMsg').style.display = 'block';
-  }
+  const existing = JSON.parse(localStorage.getItem("vfFeedback") || "[]");
+  existing.push(fb);
+  localStorage.setItem("vfFeedback", JSON.stringify(existing));
+
+  document.getElementById("formContent").style.display = "none";
+  document.getElementById("successMsg").style.display = "block";
+}
 </script>
 </body>
 </html>
