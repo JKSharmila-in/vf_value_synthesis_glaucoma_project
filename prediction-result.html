@@ -1,161 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction Results - VF Value Synthesis</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediction Result - VF Value Synthesis</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: radial-gradient(circle at top, #0c1f4a, #03080f);
+  color: #fff;
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  font-family: 'Barlow Condensed';
+  font-size: 36px;
+  letter-spacing: 3px;
+}
+
+.header p {
+  color: #7a91b5;
+  font-size: 14px;
+}
+
+.back-btn {
+  position: absolute;
+  left: 28px;
+  top: 28px;
+  color: #4d84ff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 1fr;
+  gap: 20px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.card {
+  background: rgba(8,22,41,0.85);
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.card h3 {
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #4d84ff;
+  margin-bottom: 12px;
+}
+
+.info-item {
+  font-size: 14px;
+  margin-bottom: 14px;
+  color: #cbd7ff;
+}
+
+.fundus-img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.vf-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.vf-cell {
+  background: #fff;
+  color: #000;
+  padding: 6px 0;
+  border-radius: 4px;
+}
+
+.footer {
+  margin-top: 28px;
+  text-align: center;
+}
+
+.footer button {
+  margin: 0 10px;
+  padding: 12px 26px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.download {
+  background: transparent;
+  border: 1px solid #4d84ff;
+  color: #4d84ff;
+}
+
+.feedback {
+  background: #4d84ff;
+  color: #fff;
+}
+
+.note {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #7a91b5;
+}
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1 class="header-title">Prediction Results</h1>
-                <p class="header-subtitle">Visual Field Synthesis Output</p>
-            </div>
-        </header>
 
-        <!-- Research Prototype Notice -->
-        <div class="disclaimer-banner">
-            <div class="disclaimer-icon">⚠️</div>
-            <div class="disclaimer-text">
-                <strong>Research Prototype Notice:</strong> This is a research prototype. Not for clinical diagnosis. Results must be validated by qualified ophthalmologists in appropriate clinical context.
-            </div>
-        </div>
+<div class="back-btn" onclick="history.back()">← Back</div>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Results Summary Section -->
-            <section class="section results-summary">
-                <h2>Summary</h2>
-                
-                <div class="results-grid">
-                    <!-- Input Image -->
-                    <div class="results-card image-card">
-                        <h3>Input Fundus Image</h3>
-                        <div class="result-image-container">
-                            <img id="inputImage" src="" alt="Input fundus image" class="result-image">
-                        </div>
-                    </div>
+<div class="header">
+  <h1>PREDICTION RESULT</h1>
+  <p>Visual Field (VF) Prediction from Fundus Image</p>
+</div>
 
-                    <!-- Input Parameters -->
-                    <div class="results-card params-card">
-                        <h3>Input Parameters</h3>
-                        <dl class="params-list">
-                            <dt>Age:</dt>
-                            <dd id="resultAge">—</dd>
-                            
-                            <dt>Gender:</dt>
-                            <dd id="resultGender">—</dd>
-                            
-                            <dt>IOP:</dt>
-                            <dd id="resultIOP">—</dd>
-                            
-                            <dt>CCT:</dt>
-                            <dd id="resultCCT">—</dd>
-                            
-                            <dt>Diffusion Steps:</dt>
-                            <dd id="resultSteps">—</dd>
-                            
-                            <dt>Model Output ID:</dt>
-                            <dd id="resultOutputID" class="output-id">—</dd>
-                        </dl>
-                    </div>
-                </div>
-            </section>
+<div class="layout">
 
-            <!-- VF Statistics Section -->
-            <section class="section vf-statistics">
-                <h2>Synthesised Visual Field Statistics</h2>
-                
-                <div class="statistics-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Mean Sensitivity</div>
-                        <div class="stat-value" id="vfMean">—</div>
-                        <div class="stat-unit">dB</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Min Sensitivity</div>
-                        <div class="stat-value" id="vfMin">—</div>
-                        <div class="stat-unit">dB</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Max Sensitivity</div>
-                        <div class="stat-value" id="vfMax">—</div>
-                        <div class="stat-unit">dB</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Standard Deviation</div>
-                        <div class="stat-value" id="vfStd">—</div>
-                        <div class="stat-unit">dB</div>
-                    </div>
-                </div>
-            </section>
+  <!-- Patient Info -->
+  <div class="card">
+    <h3>PATIENT INFORMATION</h3>
+    <div class="info-item">Age: <span id="age"></span></div>
+    <div class="info-item">Gender: <span id="gender"></span></div>
+    <div class="info-item">IOP (mmHg): <span id="iop"></span></div>
+    <div class="info-item">CCT (µm): <span id="cct"></span></div>
+  </div>
 
-            <!-- VF Grid Visualization -->
-            <section class="section vf-visualization">
-                <h2>Visual Field Grid</h2>
-                <p class="visualization-help">61-point Humphrey 24-2 pattern. Values in dB (decibels). Higher = better sensitivity.</p>
-                
-                <div class="vf-grid-wrapper">
-                    <canvas id="vfCanvas" class="vf-canvas"></canvas>
-                </div>
-                <div class="canvas-controls">
-                    <button id="downloadCanvasBtn" class="btn btn-secondary">Download as Image</button>
-                </div>
-            </section>
+  <!-- Fundus Image -->
+  <div class="card">
+    <h3>FUNDUS IMAGE (INPUT)</h3>
+    <img id="fundusImg" class="fundus-img">
+  </div>
 
-            <!-- VF Values Table -->
-            <section class="section vf-table-section">
-                <h2>VF Point Values (61 Points)</h2>
-                <div class="table-wrapper">
-                    <table id="vfTable" class="vf-table">
-                        <thead>
-                            <tr>
-                                <th>Point #</th>
-                                <th>Value (dB)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="vfTableBody">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+  <!-- VF Prediction -->
+  <div class="card">
+    <h3>PREDICTED VISUAL FIELD (dB)</h3>
+    <div class="vf-grid" id="vfGrid"></div>
+  </div>
 
-            <!-- Action Buttons -->
-            <section class="section action-buttons">
-                <div class="button-group">
-                    <a href="patient-details.html" class="btn btn-primary">New Prediction</a>
-                    <a href="feedback.html" class="btn btn-secondary">Provide Feedback</a>
-                    <a href="index.html" class="btn btn-secondary">Back to Home</a>
-                </div>
-            </section>
+</div>
 
-            <!-- Clinical Interpretation Note -->
-            <section class="section interpretation-note">
-                <h3>Clinical Interpretation Guidelines</h3>
-                <ul class="interpretation-list">
-                    <li>This synthesised VF is a research output. Clinical correlation is essential.</li>
-                    <li>Predictions are probabilistic; compare with recent actual VF tests when available.</li>
-                    <li>VF values typically range 0–35 dB in normal fields; lower values indicate localized defects.</li>
-                    <li>Do not use for diagnostic decisions without professional ophthalmological review.</li>
-                    <li>Consider clinical context, patient history, and imaging findings.</li>
-                </ul>
-            </section>
-        </main>
-    </div>
+<div class="footer">
+  <button class="download">⬇ Download Report</button>
+  <button class="feedback">Submit Feedback</button>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>&copy; 2026 VF Value Synthesis Research Prototype. For research use only.</p>
-    </footer>
+  <div class="note">
+    This prediction is generated by an AI model and should be interpreted by an eye care professional.
+  </div>
+</div>
 
-    <!-- Libraries for Canvas Rendering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- JavaScript -->
-    <script src="js/app.js"></script>
+<script>
+/* Load stored data */
+const patient = JSON.parse(sessionStorage.getItem('patientData'));
+const vfValues = JSON.parse(sessionStorage.getItem('vfValues'));
+const fundusImage = sessionStorage.getItem('fundusImage');
+
+/* Fill patient info */
+document.getElementById('age').textContent = patient.age ?? '-';
+document.getElementById('gender').textContent =
+  patient.gender === 'M' ? 'Male' :
+  patient.gender === 'F' ? 'Female' : '-';
+document.getElementById('iop').textContent = patient.iop ?? '-';
+document.getElementById('cct').textContent = patient.cct ?? '-';
+
+/* Show fundus image */
+document.getElementById('fundusImg').src = fundusImage;
+
+/* Render VF grid */
+const grid = document.getElementById('vfGrid');
+vfValues.forEach(v => {
+  const cell = document.createElement('div');
+  cell.className = 'vf-cell';
+  cell.textContent = v;
+  grid.appendChild(cell);
+});
+</script>
+
 </body>
 </html>
