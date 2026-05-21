@@ -1,59 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Prediction Result</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <style>
 body {
   margin: 0;
-  font-family: Inter, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   background: radial-gradient(circle at top, #0d1b2a, #020617);
-  color: #fff;
+  color: #ffffff;
 }
 
 .container {
-  padding: 30px;
+  padding: 32px;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
 }
 
 .subtitle {
   text-align: center;
   color: #9bb0ff;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
+  font-size: 14px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 260px 1fr 1fr;
-  gap: 20px;
+  gap: 22px;
 }
 
 .card {
-  background: rgba(255,255,255,0.05);
-  padding: 20px;
-  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  padding: 22px;
+  border-radius: 18px;
+  backdrop-filter: blur(10px);
 }
 
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 18px;
+  font-size: 16px;
+  color: #c7d2fe;
+}
+
+/* Patient Info */
 .info span {
-  font-size: 12px;
+  font-size: 11px;
   color: #9bb0ff;
+}
+
+.info .value {
+  font-size: 15px;
+  margin-top: 4px;
 }
 
 .info div {
   margin-bottom: 18px;
 }
 
+/* Fundus */
 img {
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
+  background: #020617;
 }
 
+/* VF Grid */
 .vf-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -61,16 +80,42 @@ img {
 }
 
 .vf {
-  padding: 6px 0;
+  padding: 7px 0;
   background: #020617;
   border-radius: 6px;
   text-align: center;
   font-size: 12px;
+  font-weight: 500;
 }
 
 .low { color: #f87171; }
 .mid { color: #facc15; }
 .high { color: #4ade80; }
+
+/* Footer Buttons */
+.footer {
+  margin-top: 34px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer a {
+  text-decoration: none;
+  color: white;
+  padding: 12px 26px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.back {
+  background: #020617;
+  border: 1px solid #1e293b;
+}
+
+.feedback {
+  background: #4f46e5;
+}
 </style>
 </head>
 
@@ -80,23 +125,46 @@ img {
   <div class="subtitle">Visual Field Prediction from Fundus Image</div>
 
   <div class="grid">
+
+    <!-- Patient Info -->
     <div class="card info">
       <h3>Patient Info</h3>
-      <div><span>Age</span><div id="age"></div></div>
-      <div><span>Gender</span><div id="gender"></div></div>
-      <div><span>IOP</span><div id="iop"></div></div>
-      <div><span>CCT</span><div id="cct"></div></div>
+      <div>
+        <span>Age</span>
+        <div class="value" id="age">–</div>
+      </div>
+      <div>
+        <span>Gender</span>
+        <div class="value" id="gender">–</div>
+      </div>
+      <div>
+        <span>IOP (mmHg)</span>
+        <div class="value" id="iop">–</div>
+      </div>
+      <div>
+        <span>CCT (µm)</span>
+        <div class="value" id="cct">–</div>
+      </div>
     </div>
 
+    <!-- Fundus Image -->
     <div class="card">
       <h3>Fundus Image</h3>
-      <img id="fundusImg">
+      <img id="fundusImg" alt="Fundus Image" />
     </div>
 
+    <!-- VF Prediction -->
     <div class="card">
-      <h3>Predicted VF (dB)</h3>
+      <h3>Predicted Visual Field (dB)</h3>
       <div class="vf-grid" id="vfGrid"></div>
     </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="patient-detail.html" class="back">← Back</a>
+    <a href="feedback.html" class="feedback">Proceed to Feedback</a>
   </div>
 </div>
 
@@ -104,18 +172,23 @@ img {
 const data = JSON.parse(localStorage.getItem("predictionData"));
 
 if (data) {
-  age.innerText = data.age;
-  gender.innerText = data.gender;
-  iop.innerText = data.iop;
-  cct.innerText = data.cct;
-  fundusImg.src = data.fundusImage;
+  document.getElementById("age").innerText = data.age || "-";
+  document.getElementById("gender").innerText = data.gender || "-";
+  document.getElementById("iop").innerText = data.iop || "-";
+  document.getElementById("cct").innerText = data.cct || "-";
+  document.getElementById("fundusImg").src = data.fundusImage || "";
 
-  data.vfValues.flat().forEach(v => {
-    const d = document.createElement("div");
-    d.className = "vf " + (v < 15 ? "low" : v < 25 ? "mid" : "high");
-    d.innerText = v;
-    vfGrid.appendChild(d);
-  });
+  const vfGrid = document.getElementById("vfGrid");
+  vfGrid.innerHTML = "";
+
+  if (data.vfValues) {
+    data.vfValues.flat().forEach(v => {
+      const d = document.createElement("div");
+      d.className = "vf " + (v < 15 ? "low" : v < 25 ? "mid" : "high");
+      d.innerText = v;
+      vfGrid.appendChild(d);
+    });
+  }
 }
 </script>
 </body>
