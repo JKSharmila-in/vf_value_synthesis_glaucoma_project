@@ -1,198 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prediction Result - VF Value Synthesis</title>
+  <meta charset="UTF-8" />
+  <title>Prediction Result | Glaucoma Detection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Barlow', sans-serif;
-  background: radial-gradient(circle at top, #0c1f4a, #03080f);
-  color: #fff;
-  min-height: 100vh;
-  padding: 28px;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.header h1 {
-  font-family: 'Barlow Condensed';
-  font-size: 36px;
-  letter-spacing: 3px;
-}
-
-.header p {
-  color: #7a91b5;
-  font-size: 14px;
-}
-
-.back-btn {
-  position: absolute;
-  left: 28px;
-  top: 28px;
-  color: #4d84ff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 1fr;
-  gap: 20px;
-  max-width: 1200px;
-  margin: auto;
-}
-
-.card {
-  background: rgba(8,22,41,0.85);
-  border-radius: 10px;
-  padding: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-
-.card h3 {
-  font-size: 13px;
-  letter-spacing: 1px;
-  color: #4d84ff;
-  margin-bottom: 12px;
-}
-
-.info-item {
-  font-size: 14px;
-  margin-bottom: 14px;
-  color: #cbd7ff;
-}
-
-.fundus-img {
-  width: 100%;
-  border-radius: 8px;
-}
-
-.vf-grid {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: 8px;
-  text-align: center;
-  font-size: 13px;
-}
-
-.vf-cell {
-  background: #fff;
-  color: #000;
-  padding: 6px 0;
-  border-radius: 4px;
-}
-
-.footer {
-  margin-top: 28px;
-  text-align: center;
-}
-
-.footer button {
-  margin: 0 10px;
-  padding: 12px 26px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.download {
-  background: transparent;
-  border: 1px solid #4d84ff;
-  color: #4d84ff;
-}
-
-.feedback {
-  background: #4d84ff;
-  color: #fff;
-}
-
-.note {
-  margin-top: 16px;
-  font-size: 12px;
-  color: #7a91b5;
-}
-</style>
+  <style>
+    body {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+  </style>
 </head>
 
-<body>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-<div class="back-btn" onclick="history.back()">← Back</div>
+  <div class="max-w-6xl w-full bg-slate-900 rounded-2xl shadow-xl p-6 space-y-6">
 
-<div class="header">
-  <h1>PREDICTION RESULT</h1>
-  <p>Visual Field (VF) Prediction from Fundus Image</p>
-</div>
+    <!-- Header -->
+    <div class="text-center">
+      <h1 class="text-3xl font-bold text-cyan-400">
+        Glaucoma Prediction Result
+      </h1>
+      <p class="text-slate-400 mt-1">
+        AI-assisted screening summary
+      </p>
+    </div>
 
-<div class="layout">
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-  <!-- Patient Info -->
-  <div class="card">
-    <h3>PATIENT INFORMATION</h3>
-    <div class="info-item">Age: <span id="age"></span></div>
-    <div class="info-item">Gender: <span id="gender"></span></div>
-    <div class="info-item">IOP (mmHg): <span id="iop"></span></div>
-    <div class="info-item">CCT (µm): <span id="cct"></span></div>
+      <!-- Fundus Image -->
+      <div class="bg-slate-800 rounded-xl p-4 flex flex-col items-center">
+        <h2 class="text-lg font-semibold mb-3">Fundus Image</h2>
+        <img
+          id="fundusImg"
+          src=""
+          alt="Input fundus image"
+          class="w-full max-w-sm rounded-lg border border-slate-600"
+        />
+      </div>
+
+      <!-- Patient Details -->
+      <div class="bg-slate-800 rounded-xl p-4">
+        <h2 class="text-lg font-semibold mb-4">Patient Details</h2>
+
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span class="text-slate-400">Age</span>
+            <p id="age" class="text-lg font-medium">—</p>
+          </div>
+
+          <div>
+            <span class="text-slate-400">Gender</span>
+            <p id="gender" class="text-lg font-medium">—</p>
+          </div>
+
+          <div>
+            <span class="text-slate-400">IOP (mmHg)</span>
+            <p id="iop" class="text-lg font-medium">—</p>
+          </div>
+
+          <div>
+            <span class="text-slate-400">CCT (µm)</span>
+            <p id="cct" class="text-lg font-medium">—</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prediction Section -->
+    <div class="bg-slate-800 rounded-xl p-6 text-center">
+      <h2 class="text-xl font-semibold mb-2">Prediction</h2>
+
+      <!-- You can dynamically change this later -->
+      <p
+        id="predictionText"
+        class="text-2xl font-bold text-green-400"
+      >
+        Low Risk of Glaucoma
+      </p>
+
+      <p class="text-slate-400 mt-2 text-sm">
+        This result is generated using AI model inference.
+        Not a clinical diagnosis.
+      </p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-center gap-4">
+      <a
+        href="index.html"
+        class="px-6 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-semibold"
+      >
+        New Test
+      </a>
+
+      <button
+        onclick="window.print()"
+        class="px-6 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold"
+      >
+        Print
+      </button>
+    </div>
+
   </div>
 
-  <!-- Fundus Image -->
-  <div class="card">
-    <h3>FUNDUS IMAGE (INPUT)</h3>
-    <img id="fundusImg" class="fundus-img">
-  </div>
+  <!-- SCRIPT -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-  <!-- VF Prediction -->
-  <div class="card">
-    <h3>PREDICTED VISUAL FIELD (dB)</h3>
-    <div class="vf-grid" id="vfGrid"></div>
-  </div>
+      // Read stored data
+      const fundusImage = sessionStorage.getItem("fundusImage");
+      const patientData = JSON.parse(
+        sessionStorage.getItem("patientData") || "{}"
+      );
 
-</div>
+      // Debug (remove later)
+      console.log("Fundus Image:", fundusImage);
+      console.log("Patient Data:", patientData);
 
-<div class="footer">
-  <button class="download">⬇ Download Report</button>
-  <button class="feedback">Submit Feedback</button>
+      // Set fundus image
+      const img = document.getElementById("fundusImg");
+      if (img && fundusImage) {
+        img.src = fundusImage;
+      }
 
-  <div class="note">
-    This prediction is generated by an AI model and should be interpreted by an eye care professional.
-  </div>
-</div>
+      // Set patient values
+      document.getElementById("age").textContent =
+        patientData.age || "—";
 
-<script>
-/* Load stored data */
-const patient = JSON.parse(sessionStorage.getItem('patientData'));
-const vfValues = JSON.parse(sessionStorage.getItem('vfValues'));
-const fundusImage = sessionStorage.getItem('fundusImage');
+      document.getElementById("gender").textContent =
+        patientData.gender === "M"
+          ? "Male"
+          : patientData.gender === "F"
+          ? "Female"
+          : "—";
 
-/* Fill patient info */
-document.getElementById('age').textContent = patient.age ?? '-';
-document.getElementById('gender').textContent =
-  patient.gender === 'M' ? 'Male' :
-  patient.gender === 'F' ? 'Female' : '-';
-document.getElementById('iop').textContent = patient.iop ?? '-';
-document.getElementById('cct').textContent = patient.cct ?? '-';
+      document.getElementById("iop").textContent =
+        patientData.iop || "—";
 
-/* Show fundus image */
-document.getElementById('fundusImg').src = fundusImage;
+      document.getElementById("cct").textContent =
+        patientData.cct || "—";
 
-/* Render VF grid */
-const grid = document.getElementById('vfGrid');
-vfValues.forEach(v => {
-  const cell = document.createElement('div');
-  cell.className = 'vf-cell';
-  cell.textContent = v;
-  grid.appendChild(cell);
-});
-</script>
+    });
+  </script>
 
 </body>
 </html>
