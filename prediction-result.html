@@ -94,18 +94,20 @@ img {
 
 /* Footer Buttons */
 .footer {
-  margin-top: 34px;
+  margin-top: 36px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.footer a {
+.footer a, .footer button {
   text-decoration: none;
   color: white;
   padding: 12px 26px;
   border-radius: 12px;
   font-size: 15px;
+  border: none;
+  cursor: pointer;
 }
 
 .back {
@@ -114,7 +116,9 @@ img {
 }
 
 .feedback {
-  background: #4f46e5;
+  background: #22c55e;
+  color: #020617;
+  font-weight: 600;
 }
 </style>
 </head>
@@ -164,7 +168,7 @@ img {
   <!-- Footer -->
   <div class="footer">
     <a href="patient-detail.html" class="back">← Back</a>
-    <a href="feedback.html" class="feedback">Proceed to Feedback</a>
+    <button id="feedbackBtn" class="feedback">Submit Feedback</button>
   </div>
 </div>
 
@@ -190,6 +194,11 @@ if (data) {
     });
   }
 }
+
+/* Submit Feedback Button */
+document.getElementById("feedbackBtn").addEventListener("click", () => {
+  window.location.href = "feedback.html";
+});
 </script>
 </body>
 </html>
