@@ -1,327 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patient Details - VF Value Synthesis</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+  <meta charset="UTF-8" />
+  <title>Patient Details | VF Value Synthesis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  :root {
-    --bg: #03080f;
-    --panel: #081629;
-    --field: #060f1e;
-    --border: rgba(255,255,255,0.08);
-    --border-focus: #3a6fd8;
-    --blue: #3a6fd8;
-    --blue-bright: #5b8fff;
-    --white: #ffffff;
-    --dim: #7a91b5;
-    --label: #8fa8cc;
-    --required: #e05656;
-  }
-
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: radial-gradient(ellipse at 50% 30%, #0c1f4a 0%, #071428 45%, #03080f 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: var(--white);
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 25% 90%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 92% 65%, rgba(255,255,255,0.1) 0%, transparent 100%);
-    pointer-events: none;
-  }
-
-  .page {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 560px;
-    padding: 0 16px;
-    animation: fadeUp 0.7s ease forwards;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .heading {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 900;
-    letter-spacing: 3px;
-    text-align: center;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
-
-  .heading-underline {
-    width: 48px;
-    height: 3px;
-    background: var(--blue);
-    margin: 0 auto 28px;
-    border-radius: 2px;
-  }
-
-  .form-card {
-    background: rgba(8,22,41,0.85);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 28px 32px 24px;
-    backdrop-filter: blur(10px);
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-  }
-
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--label);
-    margin-bottom: 6px;
-    letter-spacing: 0.5px;
-  }
-
-  .required-star { color: var(--required); margin-left: 2px; }
-
-  .file-upload-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    min-height: 46px;
-  }
-
-  .file-upload-box:hover { border-color: var(--border-focus); }
-
-  .file-upload-box input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .upload-icon { color: var(--blue); font-size: 16px; flex-shrink: 0; }
-  .upload-text { font-size: 13px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .preview-img { max-height: 36px; border-radius: 3px; display: none; }
-
-  input[type="number"],
-  input[type="text"],
-  select {
-    width: 100%;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--white);
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    padding: 11px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  input[type="number"]:focus,
-  input[type="text"]:focus,
-  select:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(58,111,216,0.15);
-  }
-
-  input::placeholder { color: var(--dim); opacity: 0.6; }
-
-  select {
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a91b5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
-  }
-
-  select option { background: #081629; color: #fff; }
-
-  .btn-predict {
-    width: 100%;
-    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
-    color: #fff;
-    border: none;
-    padding: 13px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 20px rgba(58,111,216,0.4);
-  }
-
-  .btn-predict:hover {
-    background: linear-gradient(135deg, #4d84ff, #6f9fff);
-    box-shadow: 0 6px 28px rgba(77,132,255,0.6);
-    transform: translateY(-1px);
-  }
-
-  .loading-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(3,8,15,0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .loading-overlay.active { display: flex; }
-
-  .spinner {
-    width: 44px; height: 44px;
-    border: 3px solid rgba(58,111,216,0.2);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-text { color: var(--dim); font-size: 14px; letter-spacing: 1px; }
-</style>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
 </head>
-<body>
 
-<div class="page">
-  <h1 class="heading">Patient Details</h1>
-  <div class="heading-underline"></div>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
-  <div class="form-card">
-    <div class="form-group">
-      <label>Fundus Image <span class="required-star">*</span></label>
-      <label class="file-upload-box">
-        <input type="file" id="fundusFile" accept="image/*">
-        <span class="upload-text" id="uploadText">Click to upload image...</span>
-        <img class="preview-img" id="previewImg" alt="Preview">
-      </label>
+  <div class="bg-white w-full max-w-4xl rounded-xl shadow-lg p-8">
+    
+    <!-- Header -->
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+      Patient Details & Fundus Upload
+    </h1>
+
+    <!-- Form -->
+    <form id="patientForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Patient Name -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">
+          Patient Name
+        </label>
+        <input type="text" required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <!-- Age -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">
+          Age
+        </label>
+        <input type="number" required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <!-- Gender -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">
+          Gender
+        </label>
+        <select required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <!-- Eye -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-600 mb-1">
+          Eye
+        </label>
+        <select required
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select</option>
+          <option>Right Eye</option>
+          <option>Left Eye</option>
+        </select>
+      </div>
+
+      <!-- Fundus Upload -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-semibold text-gray-600 mb-2">
+          Upload Fundus Image
+        </label>
+        <input id="fundusInput" type="file" accept="image/*" required
+          class="block w-full text-sm text-gray-600
+          file:mr-4 file:py-2 file:px-4
+          file:rounded-lg file:border-0
+          file:text-sm file:font-semibold
+          file:bg-blue-50 file:text-blue-700
+          hover:file:bg-blue-100" />
+      </div>
+
+      <!-- Image Preview -->
+      <div class="md:col-span-2 flex justify-center">
+        <img id="previewImage"
+          class="hidden mt-4 max-h-64 rounded-lg border"
+          alt="Fundus Preview" />
+      </div>
+
+      <!-- Predict Button -->
+      <div class="md:col-span-2 text-center mt-4">
+        <button type="submit"
+          class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+          Predict VF Values
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Loader -->
+    <div id="loader" class="hidden text-center mt-6">
+      <p class="text-blue-600 font-semibold animate-pulse">
+        Running model inference...
+      </p>
     </div>
 
-    <div class="form-group">
-      <label>Age</label>
-      <input type="number" id="age" placeholder="e.g. 45">
-    </div>
-
-    <div class="form-group">
-      <label>IOP (mmHg)</label>
-      <input type="number" id="iop" placeholder="e.g. 15">
-    </div>
-
-    <div class="form-group">
-      <label>Gender</label>
-      <select id="gender">
-        <option value="">-- Select Gender --</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>CCT (µm)</label>
-      <input type="number" id="cct" placeholder="e.g. 520">
-    </div>
-
-    <button class="btn-predict" onclick="runPrediction()">Predict</button>
   </div>
-</div>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">Processing prediction...</div>
-</div>
+  <!-- Script -->
+  <script>
+    const form = document.getElementById("patientForm");
+    const fundusInput = document.getElementById("fundusInput");
+    const previewImage = document.getElementById("previewImage");
+    const loader = document.getElementById("loader");
 
-<script>
-  const fundusFile = document.getElementById('fundusFile');
-  const uploadText = document.getElementById('uploadText');
-  const previewImg = document.getElementById('previewImg');
-  
-  // Store image string globally when loaded
-  let base64ImageString = "";
+    // Preview uploaded image
+    fundusInput.addEventListener("change", () => {
+      const file = fundusInput.files[0];
+      if (!file) return;
 
-  fundusFile.addEventListener('change', () => {
-    const file = fundusFile.files[0];
-    if (file) {
-      uploadText.textContent = file.name;
       const reader = new FileReader();
       reader.onload = e => {
-        previewImg.src = e.target.result;
-        previewImg.style.display = 'block';
-        base64ImageString = e.target.result; // Capture the real pixel data string
+        previewImage.src = e.target.result;
+        previewImage.classList.remove("hidden");
       };
       reader.readAsDataURL(file);
-    }
-  });
+    });
 
-  function runPrediction() {
-    // 1. Structural Check: Ensure image asset exists before starting tracking
-    if (!fundusFile.files.length) {
-      alert('Please upload a fundus image.');
-      return;
-    }
+    // Submit form → Flask backend
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    // 2. Extract values dynamically from the fields
-    const ageVal = document.getElementById('age').value.trim();
-    const iopVal = document.getElementById('iop').value.trim();
-    const genderVal = document.getElementById('gender').value;
-    const cctVal = document.getElementById('cct').value.trim();
+      const file = fundusInput.files[0];
+      if (!file) {
+        alert("Please upload a fundus image");
+        return;
+      }
 
-    // 3. Save data to sessionStorage so prediction-result.html can read it!
-    sessionStorage.setItem('age', ageVal);
-    sessionStorage.setItem('iop', iopVal);
-    sessionStorage.setItem('gender', genderVal);
-    sessionStorage.setItem('cct', cctVal);
-    sessionStorage.setItem('fundusImage', base64ImageString);
+      loader.classList.remove("hidden");
 
-    // 4. Trigger the loading overlay screen anim
-    document.getElementById('loadingOverlay').classList.add('active');
-    
-    // 5. Append URL parameters as a secondary fallback layer
-    const queryParams = `?age=${encodeURIComponent(ageVal)}&gender=${encodeURIComponent(genderVal)}&iop=${encodeURIComponent(iopVal)}&cct=${encodeURIComponent(cctVal)}`;
+      const formData = new FormData();
+      formData.append("image", file);
 
-    setTimeout(() => {
-      window.location.href = 'prediction-result.html' + queryParams;
-    }, 1800);
-  }
-</script>
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error("Prediction failed");
+        }
+
+        // Save VF values for next page
+        sessionStorage.setItem(
+          "vf_values",
+          JSON.stringify(data.vf_values)
+        );
+
+        // Redirect to result page
+        window.location.href = "/prediction-result";
+
+      } catch (error) {
+        alert("Error during prediction. Check server logs.");
+        console.error(error);
+      } finally {
+        loader.classList.add("hidden");
+      }
+    });
+  </script>
 
 </body>
 </html>
