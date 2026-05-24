@@ -1,327 +1,161 @@
-heres the patient details .html: <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Patient Details - VF Value Synthesis</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
+  <meta charset="UTF-8" />
+  <title>Patient Details - VF Prediction</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0b1d3a, #020617);
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-  :root {
-    --bg: #03080f;
-    --panel: #081629;
-    --field: #060f1e;
-    --border: rgba(255,255,255,0.08);
-    --border-focus: #3a6fd8;
-    --blue: #3a6fd8;
-    --blue-bright: #5b8fff;
-    --white: #ffffff;
-    --dim: #7a91b5;
-    --label: #8fa8cc;
-    --required: #e05656;
-  }
+    .container {
+      width: 420px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
 
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
 
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: radial-gradient(ellipse at 50% 30%, #0c1f4a 0%, #071428 45%, #03080f 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    color: var(--white);
-  }
+    label {
+      font-size: 14px;
+      margin-top: 12px;
+      display: block;
+      color: #cbd5f5;
+    }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 55% 80%, rgba(255,255,255,0.2) 0%, transparent 100%),
-      radial-gradient(1px 1px at 25% 90%, rgba(255,255,255,0.15) 0%, transparent 100%),
-      radial-gradient(1px 1px at 92% 65%, rgba(255,255,255,0.1) 0%, transparent 100%);
-    pointer-events: none;
-  }
+    input, select, button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
 
-  .page {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 560px;
-    padding: 0 16px;
-    animation: fadeUp 0.7s ease forwards;
-  }
+    input, select {
+      background: #0f172a;
+      color: #fff;
+    }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+    button {
+      margin-top: 20px;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
 
-  .heading {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 900;
-    letter-spacing: 3px;
-    text-align: center;
-    text-transform: uppercase;
-    color: var(--white);
-    margin-bottom: 6px;
-  }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-  .heading-underline {
-    width: 48px;
-    height: 3px;
-    background: var(--blue);
-    margin: 0 auto 28px;
-    border-radius: 2px;
-  }
-
-  .form-card {
-    background: rgba(8,22,41,0.85);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 28px 32px 24px;
-    backdrop-filter: blur(10px);
-  }
-
-  .form-group {
-    margin-bottom: 16px;
-  }
-
-  label {
-    display: block;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--label);
-    margin-bottom: 6px;
-    letter-spacing: 0.5px;
-  }
-
-  .required-star { color: var(--required); margin-left: 2px; }
-
-  .file-upload-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    min-height: 46px;
-  }
-
-  .file-upload-box:hover { border-color: var(--border-focus); }
-
-  .file-upload-box input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .upload-icon { color: var(--blue); font-size: 16px; flex-shrink: 0; }
-  .upload-text { font-size: 13px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .preview-img { max-height: 36px; border-radius: 3px; display: none; }
-
-  input[type="number"],
-  input[type="text"],
-  select {
-    width: 100%;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--white);
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    padding: 11px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  input[type="number"]:focus,
-  input[type="text"]:focus,
-  select:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(58,111,216,0.15);
-  }
-
-  input::placeholder { color: var(--dim); opacity: 0.6; }
-
-  select {
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a91b5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
-  }
-
-  select option { background: #081629; color: #fff; }
-
-  .btn-predict {
-    width: 100%;
-    background: linear-gradient(135deg, #3a6fd8, #5b8fff);
-    color: #fff;
-    border: none;
-    padding: 13px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 8px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 20px rgba(58,111,216,0.4);
-  }
-
-  .btn-predict:hover {
-    background: linear-gradient(135deg, #4d84ff, #6f9fff);
-    box-shadow: 0 6px 28px rgba(77,132,255,0.6);
-    transform: translateY(-1px);
-  }
-
-  .loading-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(3,8,15,0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .loading-overlay.active { display: flex; }
-
-  .spinner {
-    width: 44px; height: 44px;
-    border: 3px solid rgba(58,111,216,0.2);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .loading-text { color: var(--dim); font-size: 14px; letter-spacing: 1px; }
-</style>
+    .status {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 14px;
+      color: #93c5fd;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="container">
+    <h2>Patient Details</h2>
 
-<div class="page">
-  <h1 class="heading">Patient Details</h1>
-  <div class="heading-underline"></div>
+    <form id="patientForm">
+      <label>Fundus Image *</label>
+      <input type="file" id="fundusImage" accept="image/*" required />
 
-  <div class="form-card">
-    <div class="form-group">
-      <label>Fundus Image <span class="required-star">*</span></label>
-      <label class="file-upload-box">
-        <input type="file" id="fundusFile" accept="image/*">
-        <span class="upload-text" id="uploadText">Click to upload image...</span>
-        <img class="preview-img" id="previewImg" alt="Preview">
-      </label>
-    </div>
-
-    <div class="form-group">
       <label>Age</label>
-      <input type="number" id="age" placeholder="e.g. 45">
-    </div>
+      <input type="number" id="age" placeholder="e.g. 55" />
 
-    <div class="form-group">
-      <label>IOP (mmHg)</label>
-      <input type="number" id="iop" placeholder="e.g. 15">
-    </div>
+      <label>Intraocular Pressure (IOP)</label>
+      <input type="number" id="iop" step="0.1" placeholder="e.g. 21.5" />
 
-    <div class="form-group">
+      <label>Central Corneal Thickness (CCT)</label>
+      <input type="number" id="cct" placeholder="e.g. 520" />
+
       <label>Gender</label>
       <select id="gender">
-        <option value="">-- Select Gender --</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
+        <option value="">Select</option>
+        <option value="0">Male</option>
+        <option value="1">Female</option>
       </select>
-    </div>
 
-    <div class="form-group">
-      <label>CCT (µm)</label>
-      <input type="number" id="cct" placeholder="e.g. 520">
-    </div>
+      <button type="submit" id="submitBtn">Run Prediction</button>
+    </form>
 
-    <button class="btn-predict" onclick="runPrediction()">Predict</button>
+    <div class="status" id="statusText"></div>
   </div>
-</div>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text">Processing prediction...</div>
-</div>
+  <script>
+    const form = document.getElementById("patientForm");
+    const statusText = document.getElementById("statusText");
+    const submitBtn = document.getElementById("submitBtn");
 
-<script>
-  const fundusFile = document.getElementById('fundusFile');
-  const uploadText = document.getElementById('uploadText');
-  const previewImg = document.getElementById('previewImg');
-  
-  // Store image string globally when loaded
-  let base64ImageString = "";
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  fundusFile.addEventListener('change', () => {
-    const file = fundusFile.files[0];
-    if (file) {
-      uploadText.textContent = file.name;
-      const reader = new FileReader();
-      reader.onload = e => {
-        previewImg.src = e.target.result;
-        previewImg.style.display = 'block';
-        base64ImageString = e.target.result; // Capture the real pixel data string
-      };
-      reader.readAsDataURL(file);
-    }
-  });
+      const imageInput = document.getElementById("fundusImage");
+      if (!imageInput.files.length) {
+        alert("Please upload a fundus image.");
+        return;
+      }
 
-  function runPrediction() {
-    // 1. Structural Check: Ensure image asset exists before starting tracking
-    if (!fundusFile.files.length) {
-      alert('Please upload a fundus image.');
-      return;
-    }
+      submitBtn.disabled = true;
+      statusText.textContent = "Running inference... Please wait.";
 
-    // 2. Extract values dynamically from the fields
-    const ageVal = document.getElementById('age').value.trim();
-    const iopVal = document.getElementById('iop').value.trim();
-    const genderVal = document.getElementById('gender').value;
-    const cctVal = document.getElementById('cct').value.trim();
+      const formData = new FormData();
+      formData.append("image", imageInput.files[0]);
+      formData.append("age", document.getElementById("age").value || "");
+      formData.append("iop", document.getElementById("iop").value || "");
+      formData.append("cct", document.getElementById("cct").value || "");
+      formData.append("gender", document.getElementById("gender").value || "");
 
-    // 3. Save data to sessionStorage so prediction-result.html can read it!
-    sessionStorage.setItem('age', ageVal);
-    sessionStorage.setItem('iop', iopVal);
-    sessionStorage.setItem('gender', genderVal);
-    sessionStorage.setItem('cct', cctVal);
-    sessionStorage.setItem('fundusImage', base64ImageString);
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData
+        });
 
-    // 4. Trigger the loading overlay screen anim
-    document.getElementById('loadingOverlay').classList.add('active');
-    
-    // 5. Append URL parameters as a secondary fallback layer
-    const queryParams = `?age=${encodeURIComponent(ageVal)}&gender=${encodeURIComponent(genderVal)}&iop=${encodeURIComponent(iopVal)}&cct=${encodeURIComponent(cctVal)}`;
+        if (!response.ok) {
+          throw new Error("Inference failed");
+        }
 
-    setTimeout(() => {
-      window.location.href = 'prediction-result.html' + queryParams;
-    }, 1800);
-  }
-</script>
+        const predictionResult = await response.json();
 
+        // 🔑 THIS IS THE CRITICAL FIX
+        localStorage.setItem(
+          "prediction_result",
+          JSON.stringify(predictionResult)
+        );
+
+        window.location.href = "prediction.html";
+
+      } catch (error) {
+        console.error(error);
+        statusText.textContent =
+          "Prediction failed. Please try again.";
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
