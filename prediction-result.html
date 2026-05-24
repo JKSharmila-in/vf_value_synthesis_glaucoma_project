@@ -1,113 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Prediction Result | VF Value Synthesis</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VF Prediction Result</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
 
-    .container {
-      max-width: 1100px;
-      margin: 40px auto;
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
+<style>
+:root {
+  --bg-deep: #03080f;
+  --bg-mid: #071428;
+  --blue: #3a6fd8;
+  --blue-bright: #4d84ff;
+  --dim: #7a91b5;
+  --white: #ffffff;
+}
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #2c3e50;
-    }
+body {
+  margin: 0;
+  font-family: 'Barlow', sans-serif;
+  background: radial-gradient(ellipse at 50% 40%, #0c1f4a 0%, #071428 40%, #03080f 100%);
+  color: var(--white);
+  min-height: 100vh;
+}
 
-    .vf-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 10px;
-    }
+.container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 30px;
+}
 
-    .vf-cell {
-      background: #eaf2f8;
-      border-radius: 6px;
-      padding: 10px;
-      text-align: center;
-      font-size: 14px;
-      color: #2c3e50;
-    }
+h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-bottom: 10px;
+}
 
-    .vf-cell span {
-      display: block;
-      font-weight: bold;
-      margin-top: 5px;
-    }
+.subtitle {
+  text-align: center;
+  color: var(--dim);
+  margin-bottom: 40px;
+}
 
-    .error {
-      text-align: center;
-      color: red;
-      font-size: 18px;
-    }
+.card {
+  background: rgba(10, 25, 60, 0.65);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 40px rgba(77,132,255,0.15);
+}
 
-    .back-btn {
-      display: block;
-      margin: 30px auto 0;
-      padding: 12px 20px;
-      background: #2c3e50;
-      color: white;
-      text-align: center;
-      width: 200px;
-      border-radius: 6px;
-      text-decoration: none;
-    }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
 
-    .back-btn:hover {
-      background: #1a252f;
-    }
-  </style>
+.stat {
+  text-align: center;
+}
+
+.stat span {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.vf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 16px;
+}
+
+.vf-cell {
+  background: linear-gradient(145deg, #0b1c44, #0f2a6d);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: inset 0 0 12px rgba(77,132,255,0.2);
+}
+
+.vf-cell small {
+  color: var(--dim);
+}
+
+.vf-cell strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+.error {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 18px;
+  margin-top: 60px;
+}
+
+.actions {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.btn {
+  background: linear-gradient(135deg, #3a6fd8, #5b8fff);
+  color: #fff;
+  padding: 14px 60px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 30px rgba(77,132,255,0.45);
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, #4d84ff, #6f9fff);
+}
+</style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h1>Visual Field Prediction Result</h1>
+<div class="container">
 
-    <div id="vfContainer" class="vf-grid"></div>
+  <h1>Visual Field Prediction</h1>
+  <p class="subtitle">AI-Generated VF Values from Fundus Image</p>
 
-    <p id="errorText" class="error"></p>
+  <div id="error" class="error"></div>
 
-    <a href="/" class="back-btn">Back to Home</a>
+  <div id="content" style="display:none;">
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat">Total Points<span id="total"></span></div>
+        <div class="stat">Mean VF<span id="mean"></span></div>
+        <div class="stat">Min VF<span id="min"></span></div>
+        <div class="stat">Max VF<span id="max"></span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:20px;">Predicted VF Points</h2>
+      <div id="grid" class="vf-grid"></div>
+    </div>
+
+    <div class="actions">
+      <a href="/" class="btn">Back to Home</a>
+    </div>
+
   </div>
+</div>
 
-  <script>
-    const vfContainer = document.getElementById("vfContainer");
-    const errorText = document.getElementById("errorText");
+<script>
+const raw = sessionStorage.getItem("vf_values");
 
-    const vfValuesRaw = sessionStorage.getItem("vf_values");
+if (!raw) {
+  document.getElementById("error").innerText =
+    "No prediction data found. Please upload an image again.";
+} else {
+  const values = JSON.parse(raw).map(Number);
 
-    if (!vfValuesRaw) {
-      errorText.innerText = "No prediction data found. Please upload an image again.";
-    } else {
-      const vfValues = JSON.parse(vfValuesRaw);
+  document.getElementById("total").innerText = values.length;
+  document.getElementById("min").innerText = Math.min(...values).toFixed(2);
+  document.getElementById("max").innerText = Math.max(...values).toFixed(2);
+  document.getElementById("mean").innerText =
+    (values.reduce((a,b)=>a+b,0)/values.length).toFixed(2);
 
-      vfValues.forEach((value, index) => {
-        const cell = document.createElement("div");
-        cell.className = "vf-cell";
+  const grid = document.getElementById("grid");
+  values.forEach((v,i)=>{
+    const cell = document.createElement("div");
+    cell.className = "vf-cell";
+    cell.innerHTML = `<small>Point ${i+1}</small><strong>${v.toFixed(2)}</strong>`;
+    grid.appendChild(cell);
+  });
 
-        cell.innerHTML = `
-          Point ${index + 1}
-          <span>${Number(value).toFixed(2)}</span>
-        `;
-
-        vfContainer.appendChild(cell);
-      });
-    }
-  </script>
+  document.getElementById("content").style.display = "block";
+}
+</script>
 
 </body>
 </html>
