@@ -123,7 +123,8 @@
       statusText.textContent = "Running inference... Please wait.";
 
       const formData = new FormData();
-      formData.append("image", imageInput.files[0]);
+      // 🔑 FIXED: Changed key from "image" to "fundus_image" to match Flask backend
+      formData.append("fundus_image", imageInput.files[0]); 
       formData.append("age", document.getElementById("age").value || "");
       formData.append("iop", document.getElementById("iop").value || "");
       formData.append("cct", document.getElementById("cct").value || "");
@@ -141,13 +142,13 @@
 
         const predictionResult = await response.json();
 
-        // 🔑 THIS IS THE CRITICAL FIX
         localStorage.setItem(
           "prediction_result",
           JSON.stringify(predictionResult)
         );
 
-        window.location.href = "prediction.html";
+        // 🔑 FIXED: Changed to Flask template route matching /prediction-result
+        window.location.href = "/prediction-result"; 
 
       } catch (error) {
         console.error(error);
